@@ -89,7 +89,9 @@ export default function Auth() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
               <Leaf className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="font-display text-3xl font-semibold text-foreground">Accountability Circle</h1>
+            <h1 className="font-display text-3xl font-semibold text-foreground">Accountability 
+Circle
+          </h1>
           </div>
 
           <div className="card-elevated p-8">
