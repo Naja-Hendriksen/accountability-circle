@@ -2,10 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, X, Users, Target, Heart, Calendar, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-
 const Landing = () => {
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
@@ -63,23 +61,13 @@ const Landing = () => {
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <Check className="w-5 h-5 text-primary" />
                     </div>
-                    <h3 className="text-xl font-display font-medium text-primary">Perfect for you if...</h3>
+                    <h3 className="text-xl font-display font-medium text-primary">Perfect for...</h3>
                   </div>
                   <ul className="space-y-4">
-                    {[
-                      "Women who have their own business or developing their first business",
-                      "Women who want to add a digital product or assets as part of growing their business",
-                      "Women who are motivated and willing to put consistent effort into reaching their goals",
-                      "Women excited by community and peer support",
-                      "Women who want accountability without pressure",
-                      "Women who are energised by showing up for one another each week",
-                      "Women who want to make the most of 2026 and are ready to show up for themselves, their business and each other"
-                    ].map((item, index) => (
-                      <li key={index} className="flex items-start gap-3">
+                    {["Women who have their own business or developing their first business", "Women who want to add a digital product or assets as part of growing their business", "Women who are motivated and willing to put consistent effort into reaching their goals", "Women excited by community and peer support", "Women who want accountability without pressure", "Women who are energised by showing up for one another each week", "Women who want to make the most of 2026 and are ready to show up for themselves, their business and each other"].map((item, index) => <li key={index} className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                         <span className="text-foreground/80">{item}</span>
-                      </li>
-                    ))}
+                      </li>)}
                   </ul>
                 </CardContent>
               </Card>
@@ -91,19 +79,13 @@ const Landing = () => {
                     <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
                       <X className="w-5 h-5 text-accent" />
                     </div>
-                    <h3 className="text-xl font-display font-medium text-accent">Not the right fit if...</h3>
+                    <h3 className="text-xl font-display font-medium text-accent">Not the right for...</h3>
                   </div>
                   <ul className="space-y-4">
-                    {[
-                      "Complete beginners without a defined idea or business to work on",
-                      "Women looking for step-by-step tutorials, full course or 1:1 tech setup or mentoring",
-                      "Women who are flaky or can't or don't show up for themselves or others on a consistent basis"
-                    ].map((item, index) => (
-                      <li key={index} className="flex items-start gap-3">
+                    {["Complete beginners without a defined idea or business to work on", "Women looking for step-by-step tutorials, full course or 1:1 tech setup or mentoring", "Women who are flaky or can't or don't show up for themselves or others on a consistent basis"].map((item, index) => <li key={index} className="flex items-start gap-3">
                         <X className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                         <span className="text-foreground/80">{item}</span>
-                      </li>
-                    ))}
+                      </li>)}
                   </ul>
                 </CardContent>
               </Card>
@@ -124,29 +106,23 @@ const Landing = () => {
             </p>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                {
-                  icon: Calendar,
-                  title: "Weekly Zoom Calls",
-                  description: "Join our live weekly session to connect, share and plan together"
-                },
-                {
-                  icon: Target,
-                  title: "Goal Setting",
-                  description: "Set focused weekly mini-moves that align with your bigger vision"
-                },
-                {
-                  icon: Users,
-                  title: "Peer Support",
-                  description: "Share your wins, challenges and receive encouragement from the group"
-                },
-                {
-                  icon: Heart,
-                  title: "Accountability",
-                  description: "Gentle, consistent accountability that keeps you on track"
-                }
-              ].map((item, index) => (
-                <Card key={index} className="border-primary/10 bg-gradient-to-b from-card to-muted/20">
+              {[{
+              icon: Calendar,
+              title: "Weekly Zoom Calls",
+              description: "Join our live weekly session to connect, share and plan together"
+            }, {
+              icon: Target,
+              title: "Goal Setting",
+              description: "Set focused weekly mini-moves that align with your bigger vision"
+            }, {
+              icon: Users,
+              title: "Peer Support",
+              description: "Share your wins, challenges and receive encouragement from the group"
+            }, {
+              icon: Heart,
+              title: "Accountability",
+              description: "Gentle, consistent accountability that keeps you on track"
+            }].map((item, index) => <Card key={index} className="border-primary/10 bg-gradient-to-b from-card to-muted/20">
                   <CardContent className="p-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                       <item.icon className="w-6 h-6 text-primary" />
@@ -154,8 +130,7 @@ const Landing = () => {
                     <h3 className="font-display font-medium mb-2">{item.title}</h3>
                     <p className="text-sm text-muted-foreground">{item.description}</p>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
 
             <Card className="mt-12 border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5">
@@ -207,18 +182,10 @@ const Landing = () => {
                   Paid as a subscription • Cancel anytime after your commitment
                 </p>
                 <ul className="text-left space-y-3 mb-8 max-w-sm mx-auto">
-                  {[
-                    "Weekly live group Zoom calls",
-                    "Private member dashboard",
-                    "Shared accountability view",
-                    "Small group of 6 women maximum",
-                    "Supportive community"
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-center gap-3">
+                  {["Weekly live group Zoom calls", "Private member dashboard", "Shared accountability view", "Small group of 6 women maximum", "Supportive community"].map((item, index) => <li key={index} className="flex items-center gap-3">
                       <Check className="w-4 h-4 text-primary shrink-0" />
                       <span className="text-foreground/80 text-sm">{item}</span>
-                    </li>
-                  ))}
+                    </li>)}
                 </ul>
                 <Button size="lg" className="w-full text-lg py-6 h-auto">
                   Apply to Join
@@ -263,8 +230,6 @@ const Landing = () => {
           </p>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Landing;
