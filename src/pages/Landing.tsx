@@ -79,7 +79,7 @@ const Landing = () => {
                     <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
                       <X className="w-5 h-5 text-accent" />
                     </div>
-                    <h3 className="text-xl font-display font-medium text-accent">Not the right for...</h3>
+                    <h3 className="text-xl font-display font-medium text-accent">Not the right fit for...</h3>
                   </div>
                   <ul className="space-y-4">
                     {["Complete beginners without a defined idea or business to work on", "Women looking for step-by-step tutorials, full course or 1:1 tech setup or mentoring", "Women who are flaky or can't or don't show up for themselves or others on a consistent basis"].map((item, index) => <li key={index} className="flex items-start gap-3">
