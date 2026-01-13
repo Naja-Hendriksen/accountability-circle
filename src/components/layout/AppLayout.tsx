@@ -36,7 +36,7 @@ export default function AppLayout({
                 <Leaf className="h-5 w-5 text-primary" />
               </div>
               <span className="font-display text-xl font-semibold text-sidebar-foreground">
-                Bloom
+                Circle
               </span>
             </Link>
           </div>
