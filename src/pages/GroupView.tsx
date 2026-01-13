@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import AppLayout from '@/components/layout/AppLayout';
 import { useGroupMembers, GroupMemberData } from '@/hooks/useGroupMembers';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
   Loader2, 
   Users, 
@@ -166,19 +167,12 @@ function MemberCard({ member, currentWeekDates, previousWeekDates, delay }: Memb
       {/* Member header */}
       <div className="p-6 border-b border-border/50">
         <div className="flex items-start gap-4">
-          <div className="w-14 h-14 rounded-full bg-sage-light flex items-center justify-center flex-shrink-0">
-            {profile.avatar_url ? (
-              <img 
-                src={profile.avatar_url} 
-                alt={profile.name} 
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-xl font-display font-semibold text-primary">
-                {(profile.name || '?')[0].toUpperCase()}
-              </span>
-            )}
-          </div>
+          <Avatar className="h-14 w-14 border-2 border-border flex-shrink-0">
+            <AvatarImage src={profile.avatar_url || undefined} alt={profile.name} />
+            <AvatarFallback className="bg-sage-light text-primary font-display font-semibold text-xl">
+              {(profile.name || '?')[0].toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
             <h3 className="font-display text-xl font-semibold text-foreground truncate">
               {profile.name || 'Unnamed Member'}
