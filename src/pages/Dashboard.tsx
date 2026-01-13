@@ -7,6 +7,7 @@ import { useCurrentWeekEntry, useUpdateWeeklyEntry, useMiniMoves, useAddMiniMove
 import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
+import AvatarUpload from '@/components/AvatarUpload';
 export default function Dashboard() {
   const {
     user,
@@ -193,10 +194,34 @@ export default function Dashboard() {
                 <h2 className="heading-section">Your Profile</h2>
               </div>
 
-              <EditableField label="Display Name" value={formData.name} isEditing={editingSection === 'name'} onEdit={() => setEditingSection('name')} onSave={() => saveProfileField('name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
-            ...p,
-            name: v
-          }))} placeholder="Enter your name" />
+              <div className="flex items-start gap-6 mb-6">
+                <div className="flex flex-col items-center gap-2">
+                  <AvatarUpload
+                    currentAvatarUrl={profile?.avatar_url || null}
+                    name={profile?.name || ''}
+                    onUploadComplete={async (url) => {
+                      await updateProfile.mutateAsync({ avatar_url: url });
+                    }}
+                    size="lg"
+                  />
+                  <span className="text-xs text-muted-foreground">Click to upload</span>
+                </div>
+                <div className="flex-1">
+                  <EditableField 
+                    label="Display Name" 
+                    value={formData.name} 
+                    isEditing={editingSection === 'name'} 
+                    onEdit={() => setEditingSection('name')} 
+                    onSave={() => saveProfileField('name')} 
+                    onCancel={() => setEditingSection(null)} 
+                    onChange={v => setFormData(p => ({
+                      ...p,
+                      name: v
+                    }))} 
+                    placeholder="Enter your name" 
+                  />
+                </div>
+              </div>
             </section>
 
             {/* Growth Goal */}
