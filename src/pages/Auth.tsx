@@ -50,7 +50,7 @@ export default function Auth() {
         } = await signUp(email, password, name);
         if (error) throw error;
         toast({
-          title: "Welcome to Bloom!",
+          title: "Welcome to the Circle!",
           description: "Your account has been created successfully."
         });
       }
@@ -72,7 +72,7 @@ export default function Auth() {
             <Leaf className="h-10 w-10 text-primary" />
           </div>
           <h1 className="heading-display text-foreground mb-6">
-            Bloom Collective
+            Accountability Circle
           </h1>
           <p className="text-body text-muted-foreground text-lg leading-relaxed">
             A calm, supportive space for women building digital businesses. 
