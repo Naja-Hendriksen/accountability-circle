@@ -16,6 +16,7 @@ import {
 import { Link } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const countries = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
@@ -115,15 +116,46 @@ const Apply = () => {
 
     setIsSubmitting(true);
     
-    // TODO: Submit to backend
-    // For now, just show success
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.from("applications").insert({
+        location,
+        availability,
+        commitment_level: commitmentLevel[0],
+        commitment_explanation: commitmentExplanation,
+        growth_goal: growthGoal,
+        digital_product: digitalProduct,
+        excitement,
+        agreed_to_guidelines: agreeGuidelines === "yes",
+        gdpr_consent: consentGiven,
+      });
+
+      if (error) throw error;
+
       toast({
         title: "Application Submitted!",
         description: "Thank you for applying. We'll review your application and get back to you within 48 hours."
       });
+
+      // Reset form
+      setLocation("");
+      setAvailability("");
+      setCommitmentLevel([7]);
+      setCommitmentExplanation("");
+      setGrowthGoal("");
+      setDigitalProduct("");
+      setExcitement("");
+      setAgreeGuidelines("");
+      setConsentGiven(false);
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      toast({
+        title: "Submission Failed",
+        description: "There was an error submitting your application. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
