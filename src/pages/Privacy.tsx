@@ -50,8 +50,8 @@ const Privacy = () => {
                       United Kingdom<br />
                       <br />
                       For any data protection enquiries, please contact us at:{" "}
-                      <a href="mailto:privacy@example.com" className="text-primary hover:underline">
-                        privacy@example.com
+                      <a href="mailto:najahendriksen@gmail.com" className="text-primary hover:underline">
+                        najahendriksen@gmail.com
                       </a>
                     </p>
                   </div>
@@ -228,8 +228,8 @@ const Privacy = () => {
                   </ul>
                   <p className="text-foreground/80 leading-relaxed mt-4">
                     To exercise any of these rights, please contact us at{" "}
-                    <a href="mailto:privacy@example.com" className="text-primary hover:underline">
-                      privacy@example.com
+                    <a href="mailto:najahendriksen@gmail.com" className="text-primary hover:underline">
+                      najahendriksen@gmail.com
                     </a>
                     . We will respond to your request within one month.
                   </p>
@@ -272,8 +272,8 @@ const Privacy = () => {
                   </h2>
                   <p className="text-foreground/80 leading-relaxed">
                     If you have any questions about this Privacy Policy or how we handle your personal data, please contact us at{" "}
-                    <a href="mailto:privacy@example.com" className="text-primary hover:underline">
-                      privacy@example.com
+                    <a href="mailto:najahendriksen@gmail.com" className="text-primary hover:underline">
+                      najahendriksen@gmail.com
                     </a>
                     .
                   </p>
