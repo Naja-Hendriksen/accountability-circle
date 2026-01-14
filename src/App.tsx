@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import GroupView from "./pages/GroupView";
 import Apply from "./pages/Apply";
 import Privacy from "./pages/Privacy";
+import Guidelines from "./pages/Guidelines";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/group" element={<GroupView />} />
             <Route path="/apply" element={<Apply />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/guidelines" element={<Guidelines />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
