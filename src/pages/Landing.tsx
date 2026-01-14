@@ -37,8 +37,8 @@ const Landing = () => {
               </p>
             </div>
             <div className="mt-12">
-              <Button size="lg" className="text-lg px-8 py-6 h-auto">
-                Apply to Join the Circle
+              <Button size="lg" className="text-lg px-8 py-6 h-auto" asChild>
+                <Link to="/apply">Apply to Join the Circle</Link>
               </Button>
             </div>
           </div>
@@ -187,8 +187,8 @@ const Landing = () => {
                       <span className="text-foreground/80 text-sm">{item}</span>
                     </li>)}
                 </ul>
-                <Button size="lg" className="w-full text-lg py-6 h-auto">
-                  Apply to Join
+                <Button size="lg" className="w-full text-lg py-6 h-auto" asChild>
+                  <Link to="/apply">Apply to Join</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -211,8 +211,8 @@ const Landing = () => {
               Join a circle of ambitious, supportive women who are committed to growing together.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-lg px-8 py-6 h-auto">
-                Apply to Join the Circle
+              <Button size="lg" className="text-lg px-8 py-6 h-auto" asChild>
+                <Link to="/apply">Apply to Join the Circle</Link>
               </Button>
               <Button variant="outline" size="lg" className="text-lg px-8 py-6 h-auto" asChild>
                 <Link to="/auth">Already a Member? Sign In</Link>
