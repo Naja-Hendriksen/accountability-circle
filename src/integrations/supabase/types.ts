@@ -32,6 +32,54 @@ export type Database = {
         }
         Relationships: []
       }
+      applications: {
+        Row: {
+          agreed_to_guidelines: boolean
+          availability: string
+          commitment_explanation: string
+          commitment_level: number
+          created_at: string
+          digital_product: string
+          excitement: string
+          gdpr_consent: boolean
+          growth_goal: string
+          id: string
+          location: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agreed_to_guidelines?: boolean
+          availability: string
+          commitment_explanation: string
+          commitment_level: number
+          created_at?: string
+          digital_product: string
+          excitement: string
+          gdpr_consent?: boolean
+          growth_goal: string
+          id?: string
+          location: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agreed_to_guidelines?: boolean
+          availability?: string
+          commitment_explanation?: string
+          commitment_level?: number
+          created_at?: string
+          digital_product?: string
+          excitement?: string
+          gdpr_consent?: boolean
+          growth_goal?: string
+          id?: string
+          location?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       group_members: {
         Row: {
           created_at: string
