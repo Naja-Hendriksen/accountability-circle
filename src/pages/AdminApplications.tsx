@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Navigate, Link } from "react-router-dom";
+import { useAuditLog } from "@/hooks/useAuditLog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -68,8 +69,26 @@ const AdminApplications = () => {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logAction } = useAuditLog();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [viewedApplications, setViewedApplications] = useState<Set<string>>(new Set());
+
+  // Log when admin views application details
+  const handleViewApplication = (app: Application) => {
+    setSelectedApplication(app);
+    
+    // Only log if not already viewed in this session
+    if (!viewedApplications.has(app.id)) {
+      logAction({
+        action: "view",
+        targetTable: "applications",
+        targetId: app.id,
+        metadata: { status: app.status },
+      });
+      setViewedApplications((prev) => new Set(prev).add(app.id));
+    }
+  };
 
   // Check if user is admin
   const { data: isAdmin, isLoading: adminLoading } = useQuery({
@@ -110,14 +129,31 @@ const AdminApplications = () => {
     enabled: isAdmin === true,
   });
 
-  // Update application status
+  // Update application status with audit logging
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: ApplicationStatus }) => {
+    mutationFn: async ({ 
+      id, 
+      status, 
+      oldStatus 
+    }: { 
+      id: string; 
+      status: ApplicationStatus; 
+      oldStatus?: string;
+    }) => {
       const { error } = await supabase
         .from("applications")
         .update({ status })
         .eq("id", id);
       if (error) throw error;
+      
+      // Log the status change
+      await logAction({
+        action: "update_status",
+        targetTable: "applications",
+        targetId: id,
+        oldValue: { status: oldStatus },
+        newValue: { status },
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
@@ -240,7 +276,7 @@ const AdminApplications = () => {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => setSelectedApplication(app)}
+                                    onClick={() => handleViewApplication(app)}
                                   >
                                     <Eye className="w-4 h-4" />
                                   </Button>
@@ -363,6 +399,7 @@ const AdminApplications = () => {
                                               updateStatusMutation.mutate({
                                                 id: selectedApplication.id,
                                                 status: "pending",
+                                                oldStatus: selectedApplication.status,
                                               });
                                               setSelectedApplication({
                                                 ...selectedApplication,
@@ -382,6 +419,7 @@ const AdminApplications = () => {
                                                 updateStatusMutation.mutate({
                                                   id: selectedApplication.id,
                                                   status: "approved",
+                                                  oldStatus: selectedApplication.status,
                                                 });
                                                 setSelectedApplication({
                                                   ...selectedApplication,
@@ -403,6 +441,7 @@ const AdminApplications = () => {
                                                 updateStatusMutation.mutate({
                                                   id: selectedApplication.id,
                                                   status: "rejected",
+                                                  oldStatus: selectedApplication.status,
                                                 });
                                                 setSelectedApplication({
                                                   ...selectedApplication,
@@ -424,6 +463,7 @@ const AdminApplications = () => {
                                                 updateStatusMutation.mutate({
                                                   id: selectedApplication.id,
                                                   status: "removed",
+                                                  oldStatus: selectedApplication.status,
                                                 });
                                                 setSelectedApplication({
                                                   ...selectedApplication,
@@ -452,6 +492,7 @@ const AdminApplications = () => {
                                     updateStatusMutation.mutate({
                                       id: app.id,
                                       status: "pending",
+                                      oldStatus: app.status,
                                     })
                                   }
                                   disabled={updateStatusMutation.isPending}
@@ -471,6 +512,7 @@ const AdminApplications = () => {
                                           updateStatusMutation.mutate({
                                             id: app.id,
                                             status: "approved",
+                                            oldStatus: app.status,
                                           })
                                         }
                                         disabled={updateStatusMutation.isPending}
@@ -485,6 +527,7 @@ const AdminApplications = () => {
                                           updateStatusMutation.mutate({
                                             id: app.id,
                                             status: "rejected",
+                                            oldStatus: app.status,
                                           })
                                         }
                                         disabled={updateStatusMutation.isPending}
@@ -501,6 +544,7 @@ const AdminApplications = () => {
                                       updateStatusMutation.mutate({
                                         id: app.id,
                                         status: "removed",
+                                        oldStatus: app.status,
                                       })
                                     }
                                     disabled={updateStatusMutation.isPending}
