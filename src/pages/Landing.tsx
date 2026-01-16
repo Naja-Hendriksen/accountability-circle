@@ -111,7 +111,7 @@ const Landing = () => {
                   </div>
                   <div className="text-center md:text-left">
                     <p className="text-lg text-foreground/80 leading-relaxed">Hi, I'm Naja! I'm a mum of two, building my own fully digital business while juggling life and family. I've been creating online courses, video lessons, digital downloads, newsletters, websites and other digital assets, so I know what it's like to try to figure it all out on the go.</p>
-                    <p className="text-lg text-foreground/80 leading-relaxed mt-4">I am looking for a small, curated group of women who are ready to support each other, stay accountable and grow their businesses together. I'll of course share what I've learned along the way, but mostly I am here to facilitate and join in our shared space of mutually supportive Accounta.</p>
+                    <p className="text-lg text-foreground/80 leading-relaxed mt-4">I am looking for a small, curated group of women who are ready to support each other, stay accountable and grow their businesses together. I'll of course share what I've learned along the way, but mostly I am here to facilitate and join in our shared space of mutually supportive Accountability Circle.</p>
                     <p className="text-lg text-primary font-medium mt-4">I just know we can do more when we share the journey.</p>
                   </div>
                 </div>
