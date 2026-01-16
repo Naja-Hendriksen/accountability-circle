@@ -1,29 +1,26 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
-import { LayoutDashboard, Users, LogOut, Leaf, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { LayoutDashboard, Users, LogOut, Leaf, Menu, X, Shield } from 'lucide-react';
+
 interface AppLayoutProps {
   children: ReactNode;
 }
+
 export default function AppLayout({
   children
 }: AppLayoutProps) {
-  const {
-    user,
-    signOut
-  } = useAuth();
+  const { user, signOut } = useAuth();
+  const { data: isAdmin } = useIsAdmin();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const navigation = [{
-    name: 'My Dashboard',
-    href: '/dashboard',
-    icon: LayoutDashboard
-  }, {
-    name: 'Group View',
-    href: '/group',
-    icon: Users
-  }];
+
+  const navigation = [
+    { name: 'My Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Group View', href: '/group', icon: Users },
+    ...(isAdmin ? [{ name: 'Applications', href: '/admin/applications', icon: Shield }] : []),
+  ];
   const isActive = (href: string) => location.pathname === href;
   return <div className="min-h-screen bg-background">
       {/* Desktop Sidebar */}
