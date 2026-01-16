@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, X, Users, Target, Heart, Calendar, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import najaPhoto from "@/assets/naja-facilitator.jpg";
 const Landing = () => {
   return <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -94,7 +95,42 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* What to Expect */}
+      {/* Meet Your Facilitator */}
+      <section className="py-20">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-display font-light text-center mb-12">
+              Meet Your Facilitator
+            </h2>
+            
+            <Card className="border-primary/20 bg-card/50">
+              <CardContent className="p-8 md:p-12">
+                <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+                  <div className="shrink-0">
+                    <img 
+                      src={najaPhoto} 
+                      alt="Naja Hendriksen" 
+                      className="w-48 h-48 md:w-56 md:h-56 rounded-full object-cover border-4 border-primary/20 shadow-lg"
+                    />
+                  </div>
+                  <div className="text-center md:text-left">
+                    <p className="text-lg text-foreground/80 leading-relaxed">
+                      Hi, I'm Naja! I'm a mum, just like you, building my own fully digital business while juggling life and family. I've been creating online courses, video lessons, digital downloads, newsletters, websites and other digital assets, so I know what it's like to try to figure it all out on the go.
+                    </p>
+                    <p className="text-lg text-foreground/80 leading-relaxed mt-4">
+                      I am looking for a group of women who are ready to support each other, stay accountable and grow their businesses together. I'll of course share what I've learned, but mostly I am here to facilitate our shared space of mutually supportive women creators.
+                    </p>
+                    <p className="text-lg text-primary font-medium mt-4">
+                      I just know we can do more when we're no longer alone.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       <section className="py-20">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
