@@ -40,7 +40,9 @@ export type Database = {
           commitment_level: number
           created_at: string
           digital_product: string
+          email: string
           excitement: string
+          full_name: string
           gdpr_consent: boolean
           growth_goal: string
           id: string
@@ -55,7 +57,9 @@ export type Database = {
           commitment_level: number
           created_at?: string
           digital_product: string
+          email: string
           excitement: string
+          full_name: string
           gdpr_consent?: boolean
           growth_goal: string
           id?: string
@@ -70,7 +74,9 @@ export type Database = {
           commitment_level?: number
           created_at?: string
           digital_product?: string
+          email?: string
           excitement?: string
+          full_name?: string
           gdpr_consent?: boolean
           growth_goal?: string
           id?: string

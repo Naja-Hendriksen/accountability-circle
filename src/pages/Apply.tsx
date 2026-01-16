@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -51,6 +52,8 @@ const Apply = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Form state
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [location, setLocation] = useState("");
   const [availability, setAvailability] = useState("");
   const [commitmentLevel, setCommitmentLevel] = useState([7]);
@@ -69,6 +72,19 @@ const Apply = () => {
     e.preventDefault();
     
     // Validation
+    if (!fullName.trim()) {
+      toast({ title: "Please enter your full name", variant: "destructive" });
+      return;
+    }
+    if (!email.trim()) {
+      toast({ title: "Please enter your email address", variant: "destructive" });
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({ title: "Please enter a valid email address", variant: "destructive" });
+      return;
+    }
     if (!location) {
       toast({ title: "Please select your location", variant: "destructive" });
       return;
@@ -118,6 +134,8 @@ const Apply = () => {
     
     try {
       const { error } = await supabase.from("applications").insert({
+        full_name: fullName,
+        email,
         location,
         availability,
         commitment_level: commitmentLevel[0],
@@ -137,6 +155,8 @@ const Apply = () => {
       });
 
       // Reset form
+      setFullName("");
+      setEmail("");
       setLocation("");
       setAvailability("");
       setCommitmentLevel([7]);
@@ -191,6 +211,33 @@ const Apply = () => {
 
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Full Name */}
+                <div className="space-y-3">
+                  <Label htmlFor="fullName" className="text-base font-medium">
+                    Full Name <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="fullName"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Enter your full name"
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="space-y-3">
+                  <Label htmlFor="email" className="text-base font-medium">
+                    Email Address <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                  />
+                </div>
+
                 {/* Question 1: Location */}
                 <div className="space-y-3">
                   <Label className="text-base font-medium">
