@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import SimpleCaptcha from "@/components/SimpleCaptcha";
 
 const countries = [
   "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
@@ -63,6 +64,11 @@ const Apply = () => {
   const [excitement, setExcitement] = useState("");
   const [agreeGuidelines, setAgreeGuidelines] = useState("");
   const [consentGiven, setConsentGiven] = useState(false);
+  const [captchaValid, setCaptchaValid] = useState(false);
+  
+  const handleCaptchaChange = useCallback((isValid: boolean) => {
+    setCaptchaValid(isValid);
+  }, []);
 
   const countWords = (text: string) => {
     return text.trim().split(/\s+/).filter(word => word.length > 0).length;
@@ -129,6 +135,10 @@ const Apply = () => {
       toast({ title: "Please provide consent to proceed", variant: "destructive" });
       return;
     }
+    if (!captchaValid) {
+      toast({ title: "Please solve the math problem correctly", variant: "destructive" });
+      return;
+    }
 
     setIsSubmitting(true);
     
@@ -166,6 +176,7 @@ const Apply = () => {
       setExcitement("");
       setAgreeGuidelines("");
       setConsentGiven(false);
+      setCaptchaValid(false);
     } catch (error) {
       console.error("Error submitting application:", error);
       toast({
@@ -408,9 +419,12 @@ const Apply = () => {
                   </div>
                 </div>
 
+                {/* CAPTCHA Verification */}
+                <SimpleCaptcha onValidChange={handleCaptchaChange} />
+
                 {/* Submit Button */}
                 <div className="pt-4">
-                  <Button 
+                  <Button
                     type="submit" 
                     size="lg" 
                     className="w-full text-lg py-6 h-auto"
