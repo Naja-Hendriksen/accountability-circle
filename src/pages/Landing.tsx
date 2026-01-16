@@ -107,19 +107,11 @@ const Landing = () => {
               <CardContent className="p-8 md:p-12">
                 <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
                   <div className="shrink-0">
-                    <img 
-                      src={najaPhoto} 
-                      alt="Naja Hendriksen" 
-                      className="w-48 h-48 md:w-56 md:h-56 rounded-full object-cover border-4 border-primary/20 shadow-lg"
-                    />
+                    <img src={najaPhoto} alt="Naja Hendriksen" className="w-48 h-48 md:w-56 md:h-56 rounded-full object-cover border-4 border-primary/20 shadow-lg" />
                   </div>
                   <div className="text-center md:text-left">
-                    <p className="text-lg text-foreground/80 leading-relaxed">
-                      Hi, I'm Naja! I'm a mum, just like you, building my own fully digital business while juggling life and family. I've been creating online courses, video lessons, digital downloads, newsletters, websites and other digital assets, so I know what it's like to try to figure it all out on the go.
-                    </p>
-                    <p className="text-lg text-foreground/80 leading-relaxed mt-4">
-                      I am looking for a group of women who are ready to support each other, stay accountable and grow their businesses together. I'll of course share what I've learned, but mostly I am here to facilitate our shared space of mutually supportive women creators.
-                    </p>
+                    <p className="text-lg text-foreground/80 leading-relaxed">Hi, I'm Naja! I'm a mum of two, building my own fully digital business while juggling life and family. I've been creating online courses, video lessons, digital downloads, newsletters, websites and other digital assets, so I know what it's like to try to figure it all out on the go.</p>
+                    <p className="text-lg text-foreground/80 leading-relaxed mt-4">I am looking for a small, curated group of women who are ready to support each other, stay accountable and grow their businesses together. I'll of course share what I've learned along the way, but mostly I am here to facilitate and join in our shared space of mutually supportive Accounta.</p>
                     <p className="text-lg text-primary font-medium mt-4">
                       I just know we can do more when we're no longer alone.
                     </p>
