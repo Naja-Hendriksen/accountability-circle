@@ -28,11 +28,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Eye, CheckCircle, XCircle, Clock, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, CheckCircle, XCircle, Clock, Loader2, Trash2, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
-type ApplicationStatus = "pending" | "approved" | "rejected";
+type ApplicationStatus = "pending" | "approved" | "rejected" | "removed";
 
 interface Application {
   id: string;
@@ -54,12 +54,14 @@ const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
   approved: "bg-green-100 text-green-800 border-green-200",
   rejected: "bg-red-100 text-red-800 border-red-200",
+  removed: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
 const statusIcons: Record<string, React.ReactNode> = {
   pending: <Clock className="w-3 h-3" />,
   approved: <CheckCircle className="w-3 h-3" />,
   rejected: <XCircle className="w-3 h-3" />,
+  removed: <XCircle className="w-3 h-3" />,
 };
 
 const AdminApplications = () => {
@@ -94,7 +96,10 @@ const AdminApplications = () => {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (statusFilter !== "all") {
+      if (statusFilter === "all") {
+        // "all" shows everything except removed applications
+        query = query.neq("status", "removed");
+      } else {
         query = query.eq("status", statusFilter);
       }
 
@@ -175,10 +180,11 @@ const AdminApplications = () => {
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Applications</SelectItem>
+                  <SelectItem value="all">All Active</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="approved">Approved</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="removed">Removed</SelectItem>
                 </SelectContent>
               </Select>
             </CardHeader>
@@ -351,82 +357,156 @@ const AdminApplications = () => {
                                       </div>
 
                                       <div className="flex gap-3 pt-4 border-t">
-                                        <Button
-                                          onClick={() => {
-                                            updateStatusMutation.mutate({
-                                              id: selectedApplication.id,
-                                              status: "approved",
-                                            });
-                                            setSelectedApplication({
-                                              ...selectedApplication,
-                                              status: "approved",
-                                            });
-                                          }}
-                                          disabled={
-                                            selectedApplication.status === "approved" ||
-                                            updateStatusMutation.isPending
-                                          }
-                                          className="flex-1"
-                                        >
-                                          <CheckCircle className="w-4 h-4 mr-2" />
-                                          Approve
-                                        </Button>
-                                        <Button
-                                          variant="destructive"
-                                          onClick={() => {
-                                            updateStatusMutation.mutate({
-                                              id: selectedApplication.id,
-                                              status: "rejected",
-                                            });
-                                            setSelectedApplication({
-                                              ...selectedApplication,
-                                              status: "rejected",
-                                            });
-                                          }}
-                                          disabled={
-                                            selectedApplication.status === "rejected" ||
-                                            updateStatusMutation.isPending
-                                          }
-                                          className="flex-1"
-                                        >
-                                          <XCircle className="w-4 h-4 mr-2" />
-                                          Reject
-                                        </Button>
+                                        {selectedApplication.status === "removed" ? (
+                                          <Button
+                                            onClick={() => {
+                                              updateStatusMutation.mutate({
+                                                id: selectedApplication.id,
+                                                status: "pending",
+                                              });
+                                              setSelectedApplication({
+                                                ...selectedApplication,
+                                                status: "pending",
+                                              });
+                                            }}
+                                            disabled={updateStatusMutation.isPending}
+                                            className="flex-1"
+                                          >
+                                            <RotateCcw className="w-4 h-4 mr-2" />
+                                            Restore as Pending
+                                          </Button>
+                                        ) : (
+                                          <>
+                                            <Button
+                                              onClick={() => {
+                                                updateStatusMutation.mutate({
+                                                  id: selectedApplication.id,
+                                                  status: "approved",
+                                                });
+                                                setSelectedApplication({
+                                                  ...selectedApplication,
+                                                  status: "approved",
+                                                });
+                                              }}
+                                              disabled={
+                                                selectedApplication.status === "approved" ||
+                                                updateStatusMutation.isPending
+                                              }
+                                              className="flex-1"
+                                            >
+                                              <CheckCircle className="w-4 h-4 mr-2" />
+                                              Approve
+                                            </Button>
+                                            <Button
+                                              variant="destructive"
+                                              onClick={() => {
+                                                updateStatusMutation.mutate({
+                                                  id: selectedApplication.id,
+                                                  status: "rejected",
+                                                });
+                                                setSelectedApplication({
+                                                  ...selectedApplication,
+                                                  status: "rejected",
+                                                });
+                                              }}
+                                              disabled={
+                                                selectedApplication.status === "rejected" ||
+                                                updateStatusMutation.isPending
+                                              }
+                                              className="flex-1"
+                                            >
+                                              <XCircle className="w-4 h-4 mr-2" />
+                                              Reject
+                                            </Button>
+                                            <Button
+                                              variant="outline"
+                                              onClick={() => {
+                                                updateStatusMutation.mutate({
+                                                  id: selectedApplication.id,
+                                                  status: "removed",
+                                                });
+                                                setSelectedApplication({
+                                                  ...selectedApplication,
+                                                  status: "removed",
+                                                });
+                                              }}
+                                              disabled={updateStatusMutation.isPending}
+                                              className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+                                            >
+                                              <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                          </>
+                                        )}
                                       </div>
                                     </div>
                                   )}
                                 </DialogContent>
                               </Dialog>
 
-                              {app.status === "pending" && (
+                              {app.status === "removed" ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                  onClick={() =>
+                                    updateStatusMutation.mutate({
+                                      id: app.id,
+                                      status: "pending",
+                                    })
+                                  }
+                                  disabled={updateStatusMutation.isPending}
+                                  title="Restore as pending"
+                                >
+                                  <RotateCcw className="w-4 h-4" />
+                                </Button>
+                              ) : (
                                 <>
+                                  {app.status === "pending" && (
+                                    <>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                        onClick={() =>
+                                          updateStatusMutation.mutate({
+                                            id: app.id,
+                                            status: "approved",
+                                          })
+                                        }
+                                        disabled={updateStatusMutation.isPending}
+                                      >
+                                        <CheckCircle className="w-4 h-4" />
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                        onClick={() =>
+                                          updateStatusMutation.mutate({
+                                            id: app.id,
+                                            status: "rejected",
+                                          })
+                                        }
+                                        disabled={updateStatusMutation.isPending}
+                                      >
+                                        <XCircle className="w-4 h-4" />
+                                      </Button>
+                                    </>
+                                  )}
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                    className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
                                     onClick={() =>
                                       updateStatusMutation.mutate({
                                         id: app.id,
-                                        status: "approved",
+                                        status: "removed",
                                       })
                                     }
                                     disabled={updateStatusMutation.isPending}
+                                    title="Remove (soft delete)"
                                   >
-                                    <CheckCircle className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                    onClick={() =>
-                                      updateStatusMutation.mutate({
-                                        id: app.id,
-                                        status: "rejected",
-                                      })
-                                    }
-                                    disabled={updateStatusMutation.isPending}
-                                  >
-                                    <XCircle className="w-4 h-4" />
+                                    <Trash2 className="w-4 h-4" />
                                   </Button>
                                 </>
                               )}
