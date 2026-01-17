@@ -32,6 +32,38 @@ export type Database = {
         }
         Relationships: []
       }
+      application_notes: {
+        Row: {
+          admin_user_id: string
+          application_id: string
+          content: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          admin_user_id: string
+          application_id: string
+          content: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          admin_user_id?: string
+          application_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_notes_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           agreed_to_guidelines: boolean
