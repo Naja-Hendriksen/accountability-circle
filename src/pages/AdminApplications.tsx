@@ -7,6 +7,7 @@ import { useAuditLog } from "@/hooks/useAuditLog";
 import { Button } from "@/components/ui/button";
 import { ApplicationNotes } from "@/components/ApplicationNotes";
 import { ApplicationStats } from "@/components/ApplicationStats";
+import { DeletionRequests } from "@/components/DeletionRequests";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -430,6 +431,9 @@ const AdminApplications = () => {
               <ApplicationStats applications={allApplications} />
             </div>
           )}
+
+          {/* Deletion Requests */}
+          <DeletionRequests />
 
           <Card>
             <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
