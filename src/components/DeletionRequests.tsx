@@ -71,6 +71,21 @@ export function DeletionRequests() {
     },
   });
 
+  // Send notification to member
+  const sendMemberNotification = async (
+    memberName: string,
+    memberEmail: string,
+    action: "completed" | "cancelled"
+  ) => {
+    try {
+      await supabase.functions.invoke("notify-deletion-processed", {
+        body: { memberName, memberEmail, action },
+      });
+    } catch (err) {
+      console.error("Failed to send member notification:", err);
+    }
+  };
+
   // Process deletion request (complete or cancel)
   const processMutation = useMutation({
     mutationFn: async ({
@@ -117,6 +132,9 @@ export function DeletionRequests() {
             deleted_user_name: request.user_name,
           },
         });
+
+        // Notify the member
+        await sendMemberNotification(request.user_name, request.user_email, "completed");
       } else {
         // Cancel the request
         const { error } = await supabase
@@ -137,6 +155,9 @@ export function DeletionRequests() {
           oldValue: { status: "pending" },
           newValue: { status: "cancelled" },
         });
+
+        // Notify the member
+        await sendMemberNotification(request.user_name, request.user_email, "cancelled");
       }
     },
     onSuccess: (_, variables) => {
@@ -145,6 +166,7 @@ export function DeletionRequests() {
         title: variables.action === "complete" 
           ? "Account deleted successfully" 
           : "Deletion request cancelled",
+        description: "The member has been notified via email.",
       });
     },
     onError: (error) => {
