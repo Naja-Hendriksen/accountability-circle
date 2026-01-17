@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DOMPurify from "dompurify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -325,7 +326,7 @@ const EmailTemplates = () => {
                         <div 
                           className="bg-background rounded-lg p-4 border"
                           dangerouslySetInnerHTML={{ 
-                            __html: replaceVariables(editContent, previewName) 
+                            __html: DOMPurify.sanitize(replaceVariables(editContent, previewName)) 
                           }}
                         />
                       </CardContent>
@@ -368,7 +369,7 @@ const EmailTemplates = () => {
                             <div 
                               className="mt-4 p-4 bg-muted/30 rounded-lg border"
                               dangerouslySetInnerHTML={{ 
-                                __html: replaceVariables(template.html_content, "Jane") 
+                                __html: DOMPurify.sanitize(replaceVariables(template.html_content, "Jane")) 
                               }}
                             />
                           </DialogContent>
