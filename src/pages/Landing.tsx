@@ -95,32 +95,7 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Meet Your Facilitator */}
-      <section className="py-20">
-        <div className="container mx-auto px-6">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-display font-light text-center mb-12">
-              Meet Your Facilitator
-            </h2>
-            
-            <Card className="border-primary/20 bg-card/50">
-              <CardContent className="p-8 md:p-12">
-                <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
-                  <div className="shrink-0">
-                    <img src={najaPhoto} alt="Naja Hendriksen" className="w-48 h-48 md:w-56 md:h-56 rounded-full object-cover border-4 border-primary/20 shadow-lg" />
-                  </div>
-                  <div className="text-center md:text-left">
-                    <p className="text-lg text-foreground/80 leading-relaxed">Hi, I'm Naja! I'm a mum of two, building my own fully digital business while juggling life and family. I've been creating online courses, video lessons, digital downloads, newsletters, websites and other digital assets, so I know what it's like to try to figure it all out on the go.</p>
-                    <p className="text-lg text-foreground/80 leading-relaxed mt-4">I am looking for a small, curated group of women who are ready to support each other, stay accountable and grow their businesses together. I'll of course share what I've learned along the way, but mostly I am here to facilitate and join in our mutually supportive Accountability Circle.</p>
-                    <p className="text-lg text-primary font-medium mt-4">I just know we can do more when we share the journey.</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
+      {/* What to Expect */}
       <section className="py-20">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
@@ -172,6 +147,32 @@ const Landing = () => {
                   <p>
                     <strong className="text-foreground">After the call:</strong> Stay motivated knowing your circle is cheering you on
                   </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Meet Your Facilitator */}
+      <section className="py-20">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-display font-light text-center mb-12">
+              Meet Your Facilitator
+            </h2>
+            
+            <Card className="border-primary/20 bg-card/50">
+              <CardContent className="p-8 md:p-12">
+                <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+                  <div className="shrink-0">
+                    <img src={najaPhoto} alt="Naja Hendriksen" className="w-48 h-48 md:w-56 md:h-56 rounded-full object-cover border-4 border-primary/20 shadow-lg" />
+                  </div>
+                  <div className="text-center md:text-left">
+                    <p className="text-lg text-foreground/80 leading-relaxed">Hi, I'm Naja! I'm a mum of two, building my own fully digital business while juggling life and family. I've been creating online courses, video lessons, digital downloads, newsletters, websites and other digital assets, so I know what it's like to try to figure it all out on the go.</p>
+                    <p className="text-lg text-foreground/80 leading-relaxed mt-4">I am looking for a small, curated group of women who are ready to support each other, stay accountable and grow their businesses together. I'll of course share what I've learned along the way, but mostly I am here to facilitate and join in our mutually supportive Accountability Circle.</p>
+                    <p className="text-lg text-primary font-medium mt-4">I just know we can do more when we share the journey.</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
