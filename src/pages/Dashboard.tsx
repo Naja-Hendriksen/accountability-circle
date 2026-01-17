@@ -235,37 +235,37 @@ export default function Dashboard() {
             </section>
 
             {/* Growth Goal & Monthly Milestones - Two Column Layout */}
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-6">
               {/* Growth Goal */}
-              <section className="card-elevated p-4 animate-slide-up stagger-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 rounded-lg bg-accent/20">
-                    <Target className="h-4 w-4 text-accent" />
+              <section className="card-elevated p-6 animate-slide-up stagger-1">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-lg bg-accent/20">
+                    <Target className="h-5 w-5 text-accent" />
                   </div>
-                  <h2 className="heading-section text-base">Growth Goal</h2>
+                  <h2 className="heading-section">Growth Goal</h2>
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">Your big win vision</p>
+                <p className="text-sm text-muted-foreground mb-4">Your overarching vision for what will bring you the most growth (the big win)</p>
 
                 <EditableField value={formData.growth_goal} isEditing={editingSection === 'growth_goal'} onEdit={() => setEditingSection('growth_goal')} onSave={() => saveProfileField('growth_goal')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
               ...p,
               growth_goal: v
-            }))} placeholder="E.g., 'Launch my online course and reach 100 students by Q4'" multiline compact />
+            }))} placeholder="What's the big picture? E.g., 'Launch my online course and reach 100 students by Q4'" multiline />
               </section>
 
               {/* Monthly Milestones */}
-              <section className="card-elevated p-4 animate-slide-up stagger-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 rounded-lg bg-primary/10">
-                    <Calendar className="h-4 w-4 text-primary" />
+              <section className="card-elevated p-6 animate-slide-up stagger-2">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Calendar className="h-5 w-5 text-primary" />
                   </div>
-                  <h2 className="heading-section text-base">Monthly Milestones</h2>
+                  <h2 className="heading-section">Monthly Milestones</h2>
                 </div>
-                <p className="text-xs text-muted-foreground mb-2">This month's targets</p>
+                <p className="text-sm text-muted-foreground mb-4">What do you aim to accomplish this month</p>
 
                 <EditableField value={formData.monthly_milestones} isEditing={editingSection === 'monthly_milestones'} onEdit={() => setEditingSection('monthly_milestones')} onSave={() => saveProfileField('monthly_milestones')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
               ...p,
               monthly_milestones: v
-            }))} placeholder="What specific milestones will move you toward your goal this month?" multiline compact />
+            }))} placeholder="What specific milestones will move you toward your goal this month?" multiline />
               </section>
             </div>
 
