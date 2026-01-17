@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
-import { Loader2, Leaf } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import logo from '@/assets/accountability-circle-logo.png';
 export default function Auth() {
   const {
     user,
@@ -68,8 +69,8 @@ export default function Auth() {
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary/5 items-center justify-center p-12">
         <div className="max-w-md text-center animate-fade-in">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-8">
-            <Leaf className="h-10 w-10 text-primary" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full overflow-hidden mb-8">
+            <img src={logo} alt="Accountability Circle" className="w-full h-full object-cover" />
           </div>
           <h1 className="heading-display text-foreground mb-6">
             Accountability Circle
@@ -86,8 +87,8 @@ export default function Auth() {
         <div className="w-full max-w-md animate-slide-up">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-              <Leaf className="h-8 w-8 text-primary" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full overflow-hidden mb-4">
+              <img src={logo} alt="Accountability Circle" className="w-full h-full object-cover" />
             </div>
             <h1 className="font-display text-3xl font-semibold text-foreground">Accountability Circle</h1>
           </div>
