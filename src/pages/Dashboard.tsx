@@ -369,15 +369,18 @@ export default function Dashboard() {
                       <h3 className="font-medium text-sm">Your Profile</h3>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <AvatarUpload
-                        currentAvatarUrl={profile?.avatar_url || null}
-                        name={profile?.name || ''}
-                        onUploadComplete={async (url) => {
-                          await updateProfile.mutateAsync({ avatar_url: url });
-                        }}
-                        size="md"
-                      />
+                    <div className="flex items-start gap-4">
+                      <div className="flex flex-col items-center gap-1">
+                        <AvatarUpload
+                          currentAvatarUrl={profile?.avatar_url || null}
+                          name={profile?.name || ''}
+                          onUploadComplete={async (url) => {
+                            await updateProfile.mutateAsync({ avatar_url: url });
+                          }}
+                          size="md"
+                        />
+                        <span className="text-xs text-muted-foreground">Click to change</span>
+                      </div>
                       <div className="flex-1">
                         <EditableField 
                           label="Display Name" 
