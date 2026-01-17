@@ -6,6 +6,7 @@ import { Navigate, Link } from "react-router-dom";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -77,6 +78,7 @@ const AdminApplications = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [viewedApplications, setViewedApplications] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Log when admin views application details
   const handleViewApplication = (app: Application) => {
@@ -168,6 +170,71 @@ const AdminApplications = () => {
       toast({ title: "Failed to update status", variant: "destructive" });
     },
   });
+
+  // Bulk update application statuses
+  const bulkUpdateStatusMutation = useMutation({
+    mutationFn: async ({ 
+      ids, 
+      status 
+    }: { 
+      ids: string[]; 
+      status: ApplicationStatus; 
+    }) => {
+      // Get old statuses for logging
+      const appsToUpdate = applications?.filter(app => ids.includes(app.id)) || [];
+      
+      const { error } = await supabase
+        .from("applications")
+        .update({ status })
+        .in("id", ids);
+      if (error) throw error;
+      
+      // Log each status change
+      for (const app of appsToUpdate) {
+        await logAction({
+          action: "bulk_update_status",
+          targetTable: "applications",
+          targetId: app.id,
+          oldValue: { status: app.status },
+          newValue: { status },
+          metadata: { bulk_action: true, total_updated: ids.length },
+        });
+      }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["applications"] });
+      setSelectedIds(new Set());
+      toast({ title: `${variables.ids.length} application(s) updated to ${variables.status}` });
+    },
+    onError: (error) => {
+      console.error("Error updating statuses:", error);
+      toast({ title: "Failed to update statuses", variant: "destructive" });
+    },
+  });
+
+  const handleSelectAll = (checked: boolean, filteredApps: Application[]) => {
+    if (checked) {
+      setSelectedIds(new Set(filteredApps.map(app => app.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectOne = (checked: boolean, id: string) => {
+    const newSet = new Set(selectedIds);
+    if (checked) {
+      newSet.add(id);
+    } else {
+      newSet.delete(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const handleBulkAction = (status: ApplicationStatus) => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    bulkUpdateStatusMutation.mutate({ ids, status });
+  };
 
   if (authLoading || adminLoading) {
     return (
@@ -268,23 +335,93 @@ const AdminApplications = () => {
                   );
                 }
 
+                const allSelected = filteredApplications.length > 0 && 
+                  filteredApplications.every(app => selectedIds.has(app.id));
+                const someSelected = filteredApplications.some(app => selectedIds.has(app.id));
+
                 return (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Commitment</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
+                <>
+                  {selectedIds.size > 0 && (
+                    <div className="flex items-center gap-3 p-3 mb-4 bg-muted rounded-lg border">
+                      <span className="text-sm font-medium">
+                        {selectedIds.size} selected
+                      </span>
+                      <div className="flex gap-2 ml-auto">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                          onClick={() => handleBulkAction("approved")}
+                          disabled={bulkUpdateStatusMutation.isPending}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => handleBulkAction("rejected")}
+                          disabled={bulkUpdateStatusMutation.isPending}
+                        >
+                          <XCircle className="w-4 h-4 mr-1" />
+                          Reject
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+                          onClick={() => handleBulkAction("removed")}
+                          disabled={bulkUpdateStatusMutation.isPending}
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Remove
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setSelectedIds(new Set())}
+                        >
+                          Clear
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12">
+                            <Checkbox
+                              checked={allSelected}
+                              onCheckedChange={(checked) => 
+                                handleSelectAll(checked as boolean, filteredApplications)
+                              }
+                              aria-label="Select all"
+                              className={someSelected && !allSelected ? "opacity-50" : ""}
+                            />
+                          </TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead>Commitment</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
                     <TableBody>
                       {filteredApplications.map((app) => (
-                        <TableRow key={app.id}>
+                        <TableRow key={app.id} className={selectedIds.has(app.id) ? "bg-muted/50" : ""}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedIds.has(app.id)}
+                              onCheckedChange={(checked) => 
+                                handleSelectOne(checked as boolean, app.id)
+                              }
+                              aria-label={`Select ${app.full_name}`}
+                            />
+                          </TableCell>
                           <TableCell className="whitespace-nowrap">
                             {format(new Date(app.created_at), "MMM d, yyyy")}
                           </TableCell>
@@ -625,6 +762,7 @@ const AdminApplications = () => {
                     </TableBody>
                   </Table>
                 </div>
+                </>
                 );
               })()}
             </CardContent>
