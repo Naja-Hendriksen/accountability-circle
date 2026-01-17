@@ -154,11 +154,43 @@ export type Database = {
         }
         Relationships: []
       }
+      email_clicks: {
+        Row: {
+          clicked_at: string
+          email_history_id: string
+          id: string
+          url: string
+        }
+        Insert: {
+          clicked_at?: string
+          email_history_id: string
+          id?: string
+          url: string
+        }
+        Update: {
+          clicked_at?: string
+          email_history_id?: string
+          id?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_clicks_email_history_id_fkey"
+            columns: ["email_history_id"]
+            isOneToOne: false
+            referencedRelation: "email_history"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_history: {
         Row: {
           application_id: string | null
+          click_count: number
           error_message: string | null
           id: string
+          open_count: number
+          opened_at: string | null
           recipient_email: string
           recipient_name: string
           sent_at: string
@@ -169,8 +201,11 @@ export type Database = {
         }
         Insert: {
           application_id?: string | null
+          click_count?: number
           error_message?: string | null
           id?: string
+          open_count?: number
+          opened_at?: string | null
           recipient_email: string
           recipient_name: string
           sent_at?: string
@@ -181,8 +216,11 @@ export type Database = {
         }
         Update: {
           application_id?: string | null
+          click_count?: number
           error_message?: string | null
           id?: string
+          open_count?: number
+          opened_at?: string | null
           recipient_email?: string
           recipient_name?: string
           sent_at?: string
