@@ -234,37 +234,40 @@ export default function Dashboard() {
               </div>
             </section>
 
-            {/* Growth Goal */}
-            <section className="card-elevated p-4 animate-slide-up stagger-1">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 rounded-lg bg-accent/20">
-                  <Target className="h-4 w-4 text-accent" />
+            {/* Growth Goal & Monthly Milestones - Two Column Layout */}
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Growth Goal */}
+              <section className="card-elevated p-4 animate-slide-up stagger-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 rounded-lg bg-accent/20">
+                    <Target className="h-4 w-4 text-accent" />
+                  </div>
+                  <h2 className="heading-section text-base">Growth Goal</h2>
                 </div>
-                <h2 className="heading-section text-base">Growth Goal</h2>
-                <span className="text-xs text-muted-foreground ml-auto">Your big win vision</span>
-              </div>
+                <p className="text-xs text-muted-foreground mb-2">Your big win vision</p>
 
-              <EditableField value={formData.growth_goal} isEditing={editingSection === 'growth_goal'} onEdit={() => setEditingSection('growth_goal')} onSave={() => saveProfileField('growth_goal')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
-            ...p,
-            growth_goal: v
-          }))} placeholder="E.g., 'Launch my online course and reach 100 students by Q4'" multiline compact />
-            </section>
+                <EditableField value={formData.growth_goal} isEditing={editingSection === 'growth_goal'} onEdit={() => setEditingSection('growth_goal')} onSave={() => saveProfileField('growth_goal')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
+              ...p,
+              growth_goal: v
+            }))} placeholder="E.g., 'Launch my online course and reach 100 students by Q4'" multiline compact />
+              </section>
 
-            {/* Monthly Milestones */}
-            <section className="card-elevated p-4 animate-slide-up stagger-2">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <Calendar className="h-4 w-4 text-primary" />
+              {/* Monthly Milestones */}
+              <section className="card-elevated p-4 animate-slide-up stagger-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 rounded-lg bg-primary/10">
+                    <Calendar className="h-4 w-4 text-primary" />
+                  </div>
+                  <h2 className="heading-section text-base">Monthly Milestones</h2>
                 </div>
-                <h2 className="heading-section text-base">Monthly Milestones</h2>
-                <span className="text-xs text-muted-foreground ml-auto">This month's targets</span>
-              </div>
+                <p className="text-xs text-muted-foreground mb-2">This month's targets</p>
 
-              <EditableField value={formData.monthly_milestones} isEditing={editingSection === 'monthly_milestones'} onEdit={() => setEditingSection('monthly_milestones')} onSave={() => saveProfileField('monthly_milestones')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
-            ...p,
-            monthly_milestones: v
-          }))} placeholder="What specific milestones will move you toward your goal this month?" multiline compact />
-            </section>
+                <EditableField value={formData.monthly_milestones} isEditing={editingSection === 'monthly_milestones'} onEdit={() => setEditingSection('monthly_milestones')} onSave={() => saveProfileField('monthly_milestones')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
+              ...p,
+              monthly_milestones: v
+            }))} placeholder="What specific milestones will move you toward your goal this month?" multiline compact />
+              </section>
+            </div>
 
             {/* Weekly Mini-Moves */}
             <section className="card-elevated p-6 animate-slide-up stagger-3">
