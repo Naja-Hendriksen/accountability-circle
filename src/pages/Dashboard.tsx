@@ -329,22 +329,22 @@ export default function Dashboard() {
               </section>
             </div>
 
-            {/* Self-Care */}
+            {/* Self-Care & Realisations */}
             <section className="card-elevated p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 rounded-lg bg-secondary">
                   <Heart className="h-5 w-5 text-accent" />
                 </div>
-                <h2 className="heading-section">Self-Care Notes</h2>
+                <h2 className="heading-section">Self-Care & Realisations</h2>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                How are you taking care of yourself?
+                How are you taking care of yourself? Any realisations or growth?
               </p>
 
               <EditableField value={formData.self_care} isEditing={editingSection === 'self_care'} onEdit={() => setEditingSection('self_care')} onSave={() => saveWeeklyField('self_care')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
             ...p,
             self_care: v
-          }))} placeholder="Rest, boundaries, joy—what's supporting your wellbeing?" multiline />
+          }))} placeholder="Rest, boundaries, joy, insights, realisations—what's supporting your wellbeing and growth?" multiline />
             </section>
 
             {/* Account Settings - Collapsible */}
