@@ -348,7 +348,7 @@ export default function Dashboard() {
             </section>
 
             {/* Account Settings - Collapsible */}
-            <Collapsible className="card-elevated overflow-hidden">
+            <Collapsible defaultOpen={false} className="card-elevated overflow-hidden">
               <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-muted">
