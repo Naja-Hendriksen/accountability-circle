@@ -30,7 +30,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Eye, CheckCircle, XCircle, Clock, Loader2, Trash2, RotateCcw, Search } from "lucide-react";
+import { ArrowLeft, Eye, CheckCircle, XCircle, Clock, Loader2, Trash2, RotateCcw, Search, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -260,6 +260,64 @@ const AdminApplications = () => {
     bulkUpdateStatusMutation.mutate({ ids, status });
   };
 
+  const exportToCSV = () => {
+    if (!applications?.length) return;
+
+    const headers = [
+      "Date",
+      "Name",
+      "Email",
+      "Location",
+      "Availability",
+      "Commitment Level",
+      "Commitment Explanation",
+      "Growth Goal",
+      "Digital Product",
+      "Excitement",
+      "Agreed to Guidelines",
+      "GDPR Consent",
+      "Status",
+    ];
+
+    const escapeCSV = (value: string | number | boolean) => {
+      const str = String(value);
+      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    const rows = applications.map((app) => [
+      format(new Date(app.created_at), "yyyy-MM-dd"),
+      escapeCSV(app.full_name),
+      escapeCSV(app.email),
+      escapeCSV(app.location),
+      escapeCSV(getAvailabilityLabel(app.availability)),
+      app.commitment_level,
+      escapeCSV(app.commitment_explanation),
+      escapeCSV(app.growth_goal),
+      escapeCSV(app.digital_product),
+      escapeCSV(app.excitement),
+      app.agreed_to_guidelines ? "Yes" : "No",
+      app.gdpr_consent ? "Yes" : "No",
+      app.status,
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `applications-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({ title: "Applications exported successfully" });
+  };
+
   if (authLoading || adminLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -328,6 +386,14 @@ const AdminApplications = () => {
                     <SelectItem value="removed">Removed</SelectItem>
                   </SelectContent>
                 </Select>
+                <Button
+                  variant="outline"
+                  onClick={exportToCSV}
+                  disabled={!applications?.length}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export CSV
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
