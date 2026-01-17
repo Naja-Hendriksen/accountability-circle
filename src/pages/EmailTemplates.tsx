@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Loader2, Save, Eye, Mail } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Eye, Mail, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -44,6 +44,7 @@ const EmailTemplates = () => {
   const [editSubject, setEditSubject] = useState("");
   const [editContent, setEditContent] = useState("");
   const [previewName, setPreviewName] = useState("Jane");
+  const [isSendingTest, setIsSendingTest] = useState(false);
 
   // Check if user is admin
   const { data: isAdmin, isLoading: adminLoading } = useQuery({
@@ -108,6 +109,34 @@ const EmailTemplates = () => {
       subject: editSubject,
       html_content: editContent,
     });
+  };
+
+  const handleSendTestEmail = async () => {
+    setIsSendingTest(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-test-email", {
+        body: {
+          subject: editSubject,
+          html_content: editContent,
+          test_name: previewName,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Test email sent!",
+        description: `Check your inbox at ${data.email}`,
+      });
+    } catch (error) {
+      console.error("Error sending test email:", error);
+      toast({
+        title: "Failed to send test email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingTest(false);
+    }
   };
 
   const replaceVariables = (content: string, name: string) => {
@@ -225,15 +254,29 @@ const EmailTemplates = () => {
                   </TabsContent>
                   
                   <TabsContent value="preview" className="space-y-4">
-                    <div className="flex items-center gap-3 mb-4">
-                      <Label htmlFor="previewName">Preview with name:</Label>
-                      <Input
-                        id="previewName"
-                        value={previewName}
-                        onChange={(e) => setPreviewName(e.target.value)}
-                        className="w-40"
-                        placeholder="Name..."
-                      />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <Label htmlFor="previewName">Preview with name:</Label>
+                        <Input
+                          id="previewName"
+                          value={previewName}
+                          onChange={(e) => setPreviewName(e.target.value)}
+                          className="w-40"
+                          placeholder="Name..."
+                        />
+                      </div>
+                      <Button
+                        variant="secondary"
+                        onClick={handleSendTestEmail}
+                        disabled={isSendingTest}
+                      >
+                        {isSendingTest ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4 mr-2" />
+                        )}
+                        Send Test Email
+                      </Button>
                     </div>
                     
                     <Card className="bg-muted/30">
@@ -252,6 +295,10 @@ const EmailTemplates = () => {
                         />
                       </CardContent>
                     </Card>
+
+                    <p className="text-sm text-muted-foreground">
+                      Click "Send Test Email" to receive a preview at your admin email address ({user?.email}).
+                    </p>
                   </TabsContent>
                 </Tabs>
               </CardContent>
