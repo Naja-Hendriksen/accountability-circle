@@ -5,8 +5,23 @@ import { Link } from "react-router-dom";
 import najaPhoto from "@/assets/naja-facilitator.jpg";
 const Landing = () => {
   return <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <span className="font-display text-lg text-foreground">Accountability Circle</span>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/auth">Login</Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link to="/apply">Apply</Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden pt-20">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
         <div className="container mx-auto px-6 py-20 md:py-32 relative">
           <div className="max-w-4xl mx-auto text-center">
