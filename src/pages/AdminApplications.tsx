@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { Navigate, Link } from "react-router-dom";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { Button } from "@/components/ui/button";
+import { ApplicationNotes } from "@/components/ApplicationNotes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -817,6 +818,11 @@ const AdminApplications = () => {
                                           )}
                                           <span>GDPR Consent</span>
                                         </div>
+                                      </div>
+
+                                      {/* Internal Notes Section */}
+                                      <div className="pt-4 border-t">
+                                        <ApplicationNotes applicationId={selectedApplication.id} />
                                       </div>
 
                                       <div className="flex gap-3 pt-4 border-t">
