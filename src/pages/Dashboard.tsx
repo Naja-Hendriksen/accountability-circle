@@ -633,6 +633,15 @@ function RequestDeletionDialog({ userId, userEmail, userName }: RequestDeletionD
 
       if (error) throw error;
 
+      // Notify facilitator via edge function (fire and forget)
+      supabase.functions.invoke('notify-deletion-request', {
+        body: {
+          memberName: userName,
+          memberEmail: userEmail,
+          reason: reason || undefined,
+        },
+      }).catch(err => console.error('Failed to send admin notification:', err));
+
       toast({
         title: "Request submitted",
         description: "Your account deletion request has been sent to the facilitator."
