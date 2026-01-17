@@ -326,37 +326,40 @@ export default function Dashboard() {
               </div>
             </section>
 
-            {/* Obstacles */}
-            <section className="card-elevated p-6 animate-slide-up stagger-4">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 rounded-lg bg-destructive/10">
-                  <AlertCircle className="h-5 w-5 text-destructive" />
+            {/* Obstacles & Wins - Two Column Layout */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Obstacles */}
+              <section className="card-elevated p-6 animate-slide-up stagger-4">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-lg bg-destructive/10">
+                    <AlertCircle className="h-5 w-5 text-destructive" />
+                  </div>
+                  <h2 className="heading-section">Obstacles</h2>
                 </div>
-                <h2 className="heading-section">Obstacles</h2>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">What might get in your way this week? Or reflect on what stopped you take action</p>
+                <p className="text-sm text-muted-foreground mb-4">What might get in your way this week? Or reflect on what stopped you take action</p>
 
-              <EditableField value={formData.obstacles} isEditing={editingSection === 'obstacles'} onEdit={() => setEditingSection('obstacles')} onSave={() => saveWeeklyField('obstacles')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
-            ...p,
-            obstacles: v
-          }))} placeholder="What challenges are you facing? Being honest helps the group support you." multiline />
-            </section>
+                <EditableField value={formData.obstacles} isEditing={editingSection === 'obstacles'} onEdit={() => setEditingSection('obstacles')} onSave={() => saveWeeklyField('obstacles')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
+              ...p,
+              obstacles: v
+            }))} placeholder="What challenges are you facing? Being honest helps the group support you." multiline />
+              </section>
 
-            {/* Wins */}
-            <section className="card-elevated p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 rounded-lg bg-terracotta-light">
-                  <Trophy className="h-5 w-5 text-accent" />
+              {/* Wins */}
+              <section className="card-elevated p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-lg bg-terracotta-light">
+                    <Trophy className="h-5 w-5 text-accent" />
+                  </div>
+                  <h2 className="heading-section">Wins</h2>
                 </div>
-                <h2 className="heading-section">Wins</h2>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">Celebrate your progress, no matter how small! (It does not have to be a Mini-Move)</p>
+                <p className="text-sm text-muted-foreground mb-4">Celebrate your progress, no matter how small! (It does not have to be a Mini-Move)</p>
 
-              <EditableField value={formData.wins} isEditing={editingSection === 'wins'} onEdit={() => setEditingSection('wins')} onSave={() => saveWeeklyField('wins')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
-            ...p,
-            wins: v
-          }))} placeholder="What went well this week? What are you proud of?" multiline />
-            </section>
+                <EditableField value={formData.wins} isEditing={editingSection === 'wins'} onEdit={() => setEditingSection('wins')} onSave={() => saveWeeklyField('wins')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
+              ...p,
+              wins: v
+            }))} placeholder="What went well this week? What are you proud of?" multiline />
+              </section>
+            </div>
 
             {/* Self-Care */}
             <section className="card-elevated p-6">
