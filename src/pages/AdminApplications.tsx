@@ -37,6 +37,8 @@ type ApplicationStatus = "pending" | "approved" | "rejected" | "removed";
 
 interface Application {
   id: string;
+  full_name: string;
+  email: string;
   location: string;
   availability: string;
   commitment_level: number;
@@ -239,8 +241,9 @@ const AdminApplications = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Date</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
                         <TableHead>Location</TableHead>
-                        <TableHead>Availability</TableHead>
                         <TableHead>Commitment</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -252,10 +255,16 @@ const AdminApplications = () => {
                           <TableCell className="whitespace-nowrap">
                             {format(new Date(app.created_at), "MMM d, yyyy")}
                           </TableCell>
-                          <TableCell>{app.location}</TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {getAvailabilityLabel(app.availability)}
+                          <TableCell className="font-medium">{app.full_name}</TableCell>
+                          <TableCell>
+                            <a 
+                              href={`mailto:${app.email}`} 
+                              className="text-primary hover:underline"
+                            >
+                              {app.email}
+                            </a>
                           </TableCell>
+                          <TableCell>{app.location}</TableCell>
                           <TableCell>
                             <span className="font-medium">{app.commitment_level}</span>
                             <span className="text-muted-foreground">/10</span>
@@ -287,6 +296,28 @@ const AdminApplications = () => {
                                   </DialogHeader>
                                   {selectedApplication && (
                                     <div className="space-y-6 py-4">
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <p className="text-sm text-muted-foreground">
+                                            Full Name
+                                          </p>
+                                          <p className="font-medium text-lg">
+                                            {selectedApplication.full_name}
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p className="text-sm text-muted-foreground">
+                                            Email
+                                          </p>
+                                          <a 
+                                            href={`mailto:${selectedApplication.email}`}
+                                            className="font-medium text-primary hover:underline"
+                                          >
+                                            {selectedApplication.email}
+                                          </a>
+                                        </div>
+                                      </div>
+
                                       <div className="grid grid-cols-2 gap-4">
                                         <div>
                                           <p className="text-sm text-muted-foreground">
