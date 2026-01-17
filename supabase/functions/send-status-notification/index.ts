@@ -16,77 +16,26 @@ interface StatusNotificationRequest {
   status: "approved" | "rejected" | "pending" | "removed";
 }
 
-const getEmailContent = (name: string, status: string) => {
+// Fallback templates if database templates are not available
+const getFallbackEmailContent = (name: string, status: string) => {
   const firstName = name.split(" ")[0];
 
   switch (status) {
     case "approved":
       return {
         subject: "Welcome to the Accountability Circle! 🎉",
-        html: `
-          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-            <h1 style="color: #2d5016; margin-bottom: 24px;">Congratulations, ${firstName}!</h1>
-            <p style="color: #444; font-size: 16px; line-height: 1.6;">
-              We're thrilled to let you know that your application to join the Accountability Circle has been <strong style="color: #2d5016;">approved</strong>!
-            </p>
-            <p style="color: #444; font-size: 16px; line-height: 1.6;">
-              You're now part of a supportive community of ambitious women building their digital products together. We can't wait to see what you'll accomplish.
-            </p>
-            <p style="color: #444; font-size: 16px; line-height: 1.6;">
-              <strong>Next steps:</strong><br/>
-              You'll receive a separate email shortly with details about joining our weekly Monday 10am GMT calls and accessing your member dashboard.
-            </p>
-            <p style="color: #444; font-size: 16px; line-height: 1.6; margin-top: 32px;">
-              Warmly,<br/>
-              <strong>The Accountability Circle Team</strong>
-            </p>
-          </div>
-        `,
+        html: `<h1>Congratulations, ${firstName}!</h1><p>Your application has been approved!</p>`,
       };
-
     case "rejected":
       return {
         subject: "Update on Your Accountability Circle Application",
-        html: `
-          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-            <h1 style="color: #6b4423; margin-bottom: 24px;">Thank You, ${firstName}</h1>
-            <p style="color: #444; font-size: 16px; line-height: 1.6;">
-              Thank you for your interest in joining the Accountability Circle. After careful consideration, we've decided not to move forward with your application at this time.
-            </p>
-            <p style="color: #444; font-size: 16px; line-height: 1.6;">
-              This doesn't reflect on your potential or abilities—sometimes the timing or fit just isn't right for the current cohort. We encourage you to apply again in the future when new spaces open up.
-            </p>
-            <p style="color: #444; font-size: 16px; line-height: 1.6;">
-              We wish you all the best on your journey building your digital product!
-            </p>
-            <p style="color: #444; font-size: 16px; line-height: 1.6; margin-top: 32px;">
-              Warmly,<br/>
-              <strong>The Accountability Circle Team</strong>
-            </p>
-          </div>
-        `,
+        html: `<h1>Hi ${firstName},</h1><p>Thank you for your interest. We've decided not to move forward at this time.</p>`,
       };
-
     case "pending":
       return {
-        subject: "Your Accountability Circle Application Is Under Review",
-        html: `
-          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-            <h1 style="color: #6b4423; margin-bottom: 24px;">Hi ${firstName}!</h1>
-            <p style="color: #444; font-size: 16px; line-height: 1.6;">
-              Your application for the Accountability Circle has been moved back to pending review.
-            </p>
-            <p style="color: #444; font-size: 16px; line-height: 1.6;">
-              We'll be in touch soon with an update. Thank you for your patience!
-            </p>
-            <p style="color: #444; font-size: 16px; line-height: 1.6; margin-top: 32px;">
-              Warmly,<br/>
-              <strong>The Accountability Circle Team</strong>
-            </p>
-          </div>
-        `,
+        subject: "Your Application Is Under Review",
+        html: `<h1>Hi ${firstName}!</h1><p>Your application is under review. We'll be in touch soon.</p>`,
       };
-
     default:
       return null;
   }
@@ -109,7 +58,13 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Create Supabase client with user's auth context
+    // Create Supabase client with service role for fetching templates
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Create Supabase client with user's auth context for admin check
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -146,6 +101,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const { email, name, status }: StatusNotificationRequest = await req.json();
+    const firstName = name.split(" ")[0];
 
     console.log(`Admin ${userId} sending ${status} notification to ${email} for ${name}`);
 
@@ -161,7 +117,31 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const emailContent = getEmailContent(name, status);
+    // Fetch template from database
+    let emailContent: { subject: string; html: string } | null = null;
+    
+    const { data: template, error: templateError } = await supabaseAdmin
+      .from("email_templates")
+      .select("subject, html_content")
+      .eq("template_key", status)
+      .maybeSingle();
+
+    if (templateError) {
+      console.error("Error fetching template:", templateError);
+    }
+
+    if (template) {
+      // Replace {{name}} placeholder with actual first name
+      emailContent = {
+        subject: template.subject.replace(/\{\{name\}\}/g, firstName),
+        html: template.html_content.replace(/\{\{name\}\}/g, firstName),
+      };
+      console.log("Using database template for status:", status);
+    } else {
+      // Fallback to hardcoded templates
+      emailContent = getFallbackEmailContent(name, status);
+      console.log("Using fallback template for status:", status);
+    }
     
     if (!emailContent) {
       console.log("No email content for status:", status);

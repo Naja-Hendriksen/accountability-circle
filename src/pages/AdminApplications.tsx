@@ -38,7 +38,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Eye, CheckCircle, XCircle, Clock, Loader2, Trash2, RotateCcw, Search, Download, CalendarIcon, X } from "lucide-react";
+import { ArrowLeft, Eye, CheckCircle, XCircle, Clock, Loader2, Trash2, RotateCcw, Search, Download, CalendarIcon, X, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
@@ -433,9 +433,17 @@ const AdminApplications = () => {
 
           <Card>
             <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <CardTitle className="text-2xl font-display">
-                Application Submissions
-              </CardTitle>
+              <div className="flex items-center gap-4">
+                <CardTitle className="text-2xl font-display">
+                  Application Submissions
+                </CardTitle>
+                <Link to="/admin/email-templates">
+                  <Button variant="outline" size="sm">
+                    <Mail className="w-4 h-4 mr-2" />
+                    Email Templates
+                  </Button>
+                </Link>
+              </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
