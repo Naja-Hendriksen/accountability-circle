@@ -8,6 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -30,10 +36,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Eye, CheckCircle, XCircle, Clock, Loader2, Trash2, RotateCcw, Search, Download } from "lucide-react";
+import { ArrowLeft, Eye, CheckCircle, XCircle, Clock, Loader2, Trash2, RotateCcw, Search, Download, CalendarIcon, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { cn } from "@/lib/utils";
 
 type ApplicationStatus = "pending" | "approved" | "rejected" | "removed";
 
@@ -79,6 +86,9 @@ const AdminApplications = () => {
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [viewedApplications, setViewedApplications] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [exportStartDate, setExportStartDate] = useState<Date | undefined>(undefined);
+  const [exportEndDate, setExportEndDate] = useState<Date | undefined>(undefined);
+  const [exportPopoverOpen, setExportPopoverOpen] = useState(false);
 
   // Log when admin views application details
   const handleViewApplication = (app: Application) => {
@@ -263,6 +273,32 @@ const AdminApplications = () => {
   const exportToCSV = () => {
     if (!applications?.length) return;
 
+    // Filter by date range if specified
+    let filteredApps = applications;
+    if (exportStartDate || exportEndDate) {
+      filteredApps = applications.filter((app) => {
+        const appDate = new Date(app.created_at);
+        if (exportStartDate && exportEndDate) {
+          return isWithinInterval(appDate, {
+            start: startOfDay(exportStartDate),
+            end: endOfDay(exportEndDate),
+          });
+        }
+        if (exportStartDate) {
+          return appDate >= startOfDay(exportStartDate);
+        }
+        if (exportEndDate) {
+          return appDate <= endOfDay(exportEndDate);
+        }
+        return true;
+      });
+    }
+
+    if (!filteredApps.length) {
+      toast({ title: "No applications in selected date range", variant: "destructive" });
+      return;
+    }
+
     const headers = [
       "Date",
       "Name",
@@ -287,7 +323,7 @@ const AdminApplications = () => {
       return str;
     };
 
-    const rows = applications.map((app) => [
+    const rows = filteredApps.map((app) => [
       format(new Date(app.created_at), "yyyy-MM-dd"),
       escapeCSV(app.full_name),
       escapeCSV(app.email),
@@ -309,13 +345,26 @@ const AdminApplications = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `applications-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    
+    // Include date range in filename if specified
+    let filename = "applications";
+    if (exportStartDate) filename += `-from-${format(exportStartDate, "yyyy-MM-dd")}`;
+    if (exportEndDate) filename += `-to-${format(exportEndDate, "yyyy-MM-dd")}`;
+    if (!exportStartDate && !exportEndDate) filename += `-${format(new Date(), "yyyy-MM-dd")}`;
+    link.download = `${filename}.csv`;
+    
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    toast({ title: "Applications exported successfully" });
+    setExportPopoverOpen(false);
+    toast({ title: `${filteredApps.length} application(s) exported successfully` });
+  };
+
+  const clearDateRange = () => {
+    setExportStartDate(undefined);
+    setExportEndDate(undefined);
   };
 
   if (authLoading || adminLoading) {
@@ -386,14 +435,101 @@ const AdminApplications = () => {
                     <SelectItem value="removed">Removed</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button
-                  variant="outline"
-                  onClick={exportToCSV}
-                  disabled={!applications?.length}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export CSV
-                </Button>
+                <Popover open={exportPopoverOpen} onOpenChange={setExportPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      disabled={!applications?.length}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Export CSV
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-4" align="end">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-sm">Date Range (optional)</h4>
+                        <p className="text-xs text-muted-foreground">
+                          Leave empty to export all applications
+                        </p>
+                      </div>
+                      
+                      <div className="grid gap-3">
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium">From</label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !exportStartDate && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {exportStartDate ? format(exportStartDate, "PPP") : "Select date"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={exportStartDate}
+                                onSelect={setExportStartDate}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium">To</label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !exportEndDate && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {exportEndDate ? format(exportEndDate, "PPP") : "Select date"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={exportEndDate}
+                                onSelect={setExportEndDate}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </div>
+
+                      {(exportStartDate || exportEndDate) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full"
+                          onClick={clearDateRange}
+                        >
+                          <X className="w-3 h-3 mr-1" />
+                          Clear dates
+                        </Button>
+                      )}
+
+                      <Button 
+                        className="w-full" 
+                        onClick={exportToCSV}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Export {exportStartDate || exportEndDate ? "filtered" : "all"}
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </CardHeader>
             <CardContent>
