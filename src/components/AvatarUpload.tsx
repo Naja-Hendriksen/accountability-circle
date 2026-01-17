@@ -9,6 +9,7 @@ interface AvatarUploadProps {
   currentAvatarUrl: string | null;
   name: string;
   onUploadComplete: (url: string) => void;
+  onRemove?: () => void;
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -16,11 +17,13 @@ export default function AvatarUpload({
   currentAvatarUrl, 
   name, 
   onUploadComplete,
+  onRemove,
   size = 'lg'
 }: AvatarUploadProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const sizeClasses = {
@@ -102,6 +105,34 @@ export default function AvatarUpload({
     }
   };
 
+  const handleRemove = async () => {
+    if (!user || !currentAvatarUrl || !onRemove) return;
+
+    setRemoving(true);
+    try {
+      // Try to delete from storage (might fail if file doesn't exist, which is ok)
+      const fileName = `${user.id}/avatar`;
+      await supabase.storage
+        .from('avatars')
+        .remove([`${fileName}.jpg`, `${fileName}.jpeg`, `${fileName}.png`, `${fileName}.gif`, `${fileName}.webp`]);
+
+      onRemove();
+      
+      toast({
+        title: "Photo removed",
+        description: "Your profile photo has been removed."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setRemoving(false);
+    }
+  };
+
   const initials = (name || '?')[0].toUpperCase();
 
   return (
@@ -115,20 +146,33 @@ export default function AvatarUpload({
       
       <button
         onClick={() => fileInputRef.current?.click()}
-        disabled={uploading}
+        disabled={uploading || removing}
         className={`
           absolute inset-0 rounded-full flex items-center justify-center
           bg-foreground/60 opacity-0 group-hover:opacity-100 
           transition-opacity duration-200 cursor-pointer
-          ${uploading ? 'opacity-100' : ''}
+          ${uploading || removing ? 'opacity-100' : ''}
         `}
       >
         {uploading ? (
+          <Loader2 className={`${iconSizes[size]} text-background animate-spin`} />
+        ) : removing ? (
           <Loader2 className={`${iconSizes[size]} text-background animate-spin`} />
         ) : (
           <Camera className={`${iconSizes[size]} text-background`} />
         )}
       </button>
+
+      {/* Remove button - only show when there's an avatar and onRemove is provided */}
+      {currentAvatarUrl && onRemove && !uploading && !removing && (
+        <button
+          onClick={handleRemove}
+          className="absolute -top-1 -right-1 p-1 rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-destructive/90"
+          title="Remove photo"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
 
       <input
         ref={fileInputRef}
