@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Loader2, Save, Eye, Mail, Send } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Eye, Mail, Send, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import EmailHistory from "@/components/EmailHistory";
 
 interface EmailTemplate {
   id: string;
@@ -45,6 +46,7 @@ const EmailTemplates = () => {
   const [editContent, setEditContent] = useState("");
   const [previewName, setPreviewName] = useState("Jane");
   const [isSendingTest, setIsSendingTest] = useState(false);
+  const [activeTab, setActiveTab] = useState<"templates" | "history">("templates");
 
   // Check if user is admin
   const { data: isAdmin, isLoading: adminLoading } = useQuery({
@@ -172,16 +174,49 @@ const EmailTemplates = () => {
           </Link>
 
           <div className="mb-8">
-            <h1 className="text-3xl font-display font-semibold text-foreground mb-2">
-              Email Templates
-            </h1>
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-3xl font-display font-semibold text-foreground">
+                Email Templates
+              </h1>
+              <div className="flex gap-2">
+                <Button
+                  variant={activeTab === "templates" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveTab("templates")}
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Templates
+                </Button>
+                <Button
+                  variant={activeTab === "history" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveTab("history")}
+                >
+                  <History className="w-4 h-4 mr-2" />
+                  History
+                </Button>
+              </div>
+            </div>
             <p className="text-muted-foreground">
-              Customize the notification emails sent to applicants when their status changes.
-              Use <code className="bg-muted px-1.5 py-0.5 rounded text-sm">{"{{name}}"}</code> to include the applicant's first name.
+              {activeTab === "templates" 
+                ? <>Customize the notification emails sent to applicants when their status changes. Use <code className="bg-muted px-1.5 py-0.5 rounded text-sm">{"{{name}}"}</code> to include the applicant's first name.</>
+                : "View a history of all notification emails sent to applicants."}
             </p>
           </div>
 
-          {templatesLoading ? (
+          {activeTab === "history" ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Email History</CardTitle>
+                <CardDescription>
+                  Recent notification emails sent to applicants
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <EmailHistory limit={100} />
+              </CardContent>
+            </Card>
+          ) : templatesLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>

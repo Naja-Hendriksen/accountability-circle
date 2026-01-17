@@ -14,6 +14,7 @@ interface StatusNotificationRequest {
   email: string;
   name: string;
   status: "approved" | "rejected" | "pending" | "removed";
+  applicationId?: string;
 }
 
 // Fallback templates if database templates are not available
@@ -100,7 +101,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { email, name, status }: StatusNotificationRequest = await req.json();
+    const { email, name, status, applicationId }: StatusNotificationRequest = await req.json();
     const firstName = name.split(" ")[0];
 
     console.log(`Admin ${userId} sending ${status} notification to ${email} for ${name}`);
@@ -154,14 +155,51 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const emailResponse = await resend.emails.send({
-      from: "Accountability Circle <onboarding@resend.dev>",
-      to: [email],
-      subject: emailContent.subject,
-      html: emailContent.html,
-    });
+    let emailError: string | null = null;
+    let emailStatus = "sent";
 
-    console.log("Email sent successfully:", emailResponse);
+    try {
+      const emailResponse = await resend.emails.send({
+        from: "Accountability Circle <onboarding@resend.dev>",
+        to: [email],
+        subject: emailContent.subject,
+        html: emailContent.html,
+      });
+
+      console.log("Email sent successfully:", emailResponse);
+    } catch (sendError: any) {
+      console.error("Error sending email:", sendError);
+      emailError = sendError.message || "Unknown error";
+      emailStatus = "failed";
+    }
+
+    // Log email to history
+    const { error: historyError } = await supabaseAdmin
+      .from("email_history")
+      .insert({
+        application_id: applicationId || null,
+        recipient_email: email,
+        recipient_name: name,
+        template_key: status,
+        subject: emailContent.subject,
+        status: emailStatus,
+        sent_by: userId,
+        error_message: emailError,
+      });
+
+    if (historyError) {
+      console.error("Error logging email history:", historyError);
+    }
+
+    if (emailError) {
+      return new Response(
+        JSON.stringify({ error: "Failed to send email", details: emailError }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

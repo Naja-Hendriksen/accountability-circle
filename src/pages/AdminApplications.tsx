@@ -162,10 +162,10 @@ const AdminApplications = () => {
   });
 
   // Send email notification
-  const sendNotification = async (email: string, name: string, status: ApplicationStatus) => {
+  const sendNotification = async (email: string, name: string, status: ApplicationStatus, applicationId: string) => {
     try {
       const { error } = await supabase.functions.invoke("send-status-notification", {
-        body: { email, name, status },
+        body: { email, name, status, applicationId },
       });
       if (error) {
         console.error("Error sending notification:", error);
@@ -206,7 +206,7 @@ const AdminApplications = () => {
       });
 
       // Send email notification (fire and forget)
-      sendNotification(email, name, status);
+      sendNotification(email, name, status, id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
@@ -248,7 +248,7 @@ const AdminApplications = () => {
         });
         
         // Send email notification (fire and forget)
-        sendNotification(app.email, app.full_name, status);
+        sendNotification(app.email, app.full_name, status, app.id);
       }
     },
     onSuccess: (_, variables) => {
