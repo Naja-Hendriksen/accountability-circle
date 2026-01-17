@@ -377,6 +377,9 @@ export default function Dashboard() {
                           onUploadComplete={async (url) => {
                             await updateProfile.mutateAsync({ avatar_url: url });
                           }}
+                          onRemove={async () => {
+                            await updateProfile.mutateAsync({ avatar_url: null });
+                          }}
                           size="md"
                         />
                         <span className="text-xs text-muted-foreground">Click to change</span>
