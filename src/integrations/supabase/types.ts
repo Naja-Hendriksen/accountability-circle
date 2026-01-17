@@ -154,6 +154,53 @@ export type Database = {
         }
         Relationships: []
       }
+      email_history: {
+        Row: {
+          application_id: string | null
+          error_message: string | null
+          id: string
+          recipient_email: string
+          recipient_name: string
+          sent_at: string
+          sent_by: string | null
+          status: string
+          subject: string
+          template_key: string
+        }
+        Insert: {
+          application_id?: string | null
+          error_message?: string | null
+          id?: string
+          recipient_email: string
+          recipient_name: string
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          subject: string
+          template_key: string
+        }
+        Update: {
+          application_id?: string | null
+          error_message?: string | null
+          id?: string
+          recipient_email?: string
+          recipient_name?: string
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          subject?: string
+          template_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_history_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_templates: {
         Row: {
           created_at: string
