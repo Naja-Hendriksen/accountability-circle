@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth';
 import AppLayout from '@/components/layout/AppLayout';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { useCurrentWeekEntry, useUpdateWeeklyEntry, useMiniMoves, useAddMiniMove, useToggleMiniMove, useDeleteMiniMove } from '@/hooks/useWeeklyEntry';
-import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown } from 'lucide-react';
+import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import AvatarUpload from '@/components/AvatarUpload';
@@ -400,6 +400,12 @@ export default function Dashboard() {
                   {/* Divider */}
                   <div className="border-t border-border" />
 
+                  {/* Email Section */}
+                  <EmailChangeSection currentEmail={user?.email || ''} />
+
+                  {/* Divider */}
+                  <div className="border-t border-border" />
+
                   {/* Delete Account */}
                   <div>
                     <div className="flex items-center gap-2 mb-3">
@@ -488,6 +494,103 @@ function EditableField({
         {value ? <p className={`whitespace-pre-wrap ${compact ? 'text-sm' : 'text-body'}`}>{value}</p> : <p className={`text-muted-foreground italic ${compact ? 'text-sm' : ''}`}>{placeholder || 'Click to edit...'}</p>}
       </div>
     </div>;
+}
+
+// Email Change Section Component
+interface EmailChangeSectionProps {
+  currentEmail: string;
+}
+
+function EmailChangeSection({ currentEmail }: EmailChangeSectionProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const handleUpdateEmail = async () => {
+    if (!newEmail.trim() || newEmail === currentEmail) {
+      setIsEditing(false);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      if (error) throw error;
+      
+      toast({
+        title: "Confirmation email sent",
+        description: "Please check your new email address to confirm the change."
+      });
+      setIsEditing(false);
+      setNewEmail('');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <div className="p-1.5 rounded-lg bg-primary/10">
+          <Mail className="h-4 w-4 text-primary" />
+        </div>
+        <h3 className="font-medium text-sm">Email Address</h3>
+      </div>
+
+      {isEditing ? (
+        <div className="space-y-3">
+          <div>
+            <label className="label-text text-sm">Current email</label>
+            <p className="text-sm text-muted-foreground">{currentEmail}</p>
+          </div>
+          <div>
+            <label className="label-text text-sm">New email</label>
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="Enter new email address"
+              className="input-field text-sm"
+              autoFocus
+            />
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={handleUpdateEmail} 
+              disabled={isSubmitting || !newEmail.trim()}
+              className="btn-primary flex items-center gap-2 text-sm py-1.5 px-3"
+            >
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Update Email
+            </button>
+            <button 
+              onClick={() => { setIsEditing(false); setNewEmail(''); }} 
+              className="btn-secondary text-sm py-1.5 px-3"
+            >
+              Cancel
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            A confirmation link will be sent to your new email address.
+          </p>
+        </div>
+      ) : (
+        <div 
+          onClick={() => setIsEditing(true)} 
+          className="p-2.5 rounded-lg border border-transparent bg-muted/30 hover:bg-muted/50 hover:border-border cursor-pointer transition-all duration-200"
+        >
+          <p className="text-sm">{currentEmail}</p>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Delete Account Dialog Component
