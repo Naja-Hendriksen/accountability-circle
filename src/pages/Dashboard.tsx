@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth';
 import AppLayout from '@/components/layout/AppLayout';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
@@ -410,7 +411,7 @@ export default function Dashboard() {
                   {/* Divider */}
                   <div className="border-t border-border" />
 
-                  {/* Delete Account */}
+                  {/* Request Account Deletion */}
                   <div>
                     <div className="flex items-center gap-2 mb-3">
                       <div className="p-1.5 rounded-lg bg-destructive/10">
@@ -419,30 +420,13 @@ export default function Dashboard() {
                       <h3 className="font-medium text-sm text-destructive">Delete Account</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Permanently delete your account and all associated data. This action cannot be undone.
+                      Request deletion of your account and all associated data. The facilitator will process your request.
                     </p>
-                    <DeleteAccountDialog onDelete={async () => {
-                      try {
-                        const userId = user?.id;
-                        if (userId) {
-                          await supabase.from('mini_moves').delete().eq('user_id', userId);
-                          await supabase.from('weekly_entries').delete().eq('user_id', userId);
-                          await supabase.from('group_members').delete().eq('user_id', userId);
-                          await supabase.from('profiles').delete().eq('user_id', userId);
-                        }
-                        await supabase.auth.signOut();
-                        toast({
-                          title: "Account deleted",
-                          description: "Your account and data have been removed."
-                        });
-                      } catch (error: any) {
-                        toast({
-                          title: "Error",
-                          description: error.message,
-                          variant: "destructive"
-                        });
-                      }
-                    }} />
+                    <RequestDeletionDialog 
+                      userId={user?.id || ''} 
+                      userEmail={user?.email || ''} 
+                      userName={profile?.name || ''} 
+                    />
                   </div>
                 </div>
               </CollapsibleContent>
@@ -597,49 +581,124 @@ function EmailChangeSection({ currentEmail }: EmailChangeSectionProps) {
   );
 }
 
-// Delete Account Dialog Component
-interface DeleteAccountDialogProps {
-  onDelete: () => Promise<void>;
+// Request Deletion Dialog Component
+interface RequestDeletionDialogProps {
+  userId: string;
+  userEmail: string;
+  userName: string;
 }
 
-function DeleteAccountDialog({ onDelete }: DeleteAccountDialogProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
+function RequestDeletionDialog({ userId, userEmail, userName }: RequestDeletionDialogProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reason, setReason] = useState('');
+  const { toast } = useToast();
 
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    await onDelete();
-    setIsDeleting(false);
+  // Check if user already has a pending request
+  const { data: existingRequest } = useQuery({
+    queryKey: ['deletion-request', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('deletion_requests')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'pending')
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!userId,
+  });
+
+  const handleSubmitRequest = async () => {
+    if (!userId || !userEmail || !userName) {
+      toast({
+        title: "Error",
+        description: "Unable to submit request. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('deletion_requests')
+        .insert({
+          user_id: userId,
+          user_email: userEmail,
+          user_name: userName,
+          reason: reason || null,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Request submitted",
+        description: "Your account deletion request has been sent to the facilitator."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (existingRequest) {
+    return (
+      <div className="p-3 rounded-lg bg-muted/50 border border-border">
+        <p className="text-sm text-muted-foreground">
+          Your deletion request has been submitted and is awaiting processing by the facilitator.
+        </p>
+        <p className="text-xs text-muted-foreground mt-2">
+          Submitted: {new Date(existingRequest.requested_at).toLocaleDateString()}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <button className="btn-secondary border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive flex items-center gap-2">
           <Trash2 className="h-4 w-4" />
-          Delete My Account
+          Request Account Deletion
         </button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-destructive">Delete Account?</AlertDialogTitle>
+          <AlertDialogTitle className="text-destructive">Request Account Deletion</AlertDialogTitle>
           <AlertDialogDescription>
-            This action is <strong>permanent and cannot be undone</strong>. All your data including your profile, weekly entries, mini-moves, and group memberships will be permanently deleted.
+            Your request will be sent to the facilitator who will process the deletion of your account and all associated data. This cannot be undone once processed.
           </AlertDialogDescription>
         </AlertDialogHeader>
+        <div className="py-4">
+          <label className="text-sm font-medium mb-2 block">Reason for leaving (optional)</label>
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Share any feedback about your experience..."
+            className="input-field resize-y min-h-[80px] text-sm"
+          />
+        </div>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            onClick={handleDelete}
-            disabled={isDeleting}
+            onClick={handleSubmitRequest}
+            disabled={isSubmitting}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isDeleting ? (
+            {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Deleting...
+                Submitting...
               </>
             ) : (
-              'Yes, Delete My Account'
+              'Submit Request'
             )}
           </AlertDialogAction>
         </AlertDialogFooter>
