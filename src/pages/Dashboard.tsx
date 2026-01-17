@@ -4,10 +4,22 @@ import { useAuth } from '@/lib/auth';
 import AppLayout from '@/components/layout/AppLayout';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { useCurrentWeekEntry, useUpdateWeeklyEntry, useMiniMoves, useAddMiniMove, useToggleMiniMove, useDeleteMiniMove } from '@/hooks/useWeeklyEntry';
-import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save } from 'lucide-react';
+import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import AvatarUpload from '@/components/AvatarUpload';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 export default function Dashboard() {
   const {
     user,
@@ -362,6 +374,47 @@ export default function Dashboard() {
             self_care: v
           }))} placeholder="Rest, boundaries, joy—what's supporting your wellbeing?" multiline />
             </section>
+
+            {/* Delete Account */}
+            <section className="card-elevated p-6 border-destructive/20">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-destructive/10">
+                  <Trash2 className="h-5 w-5 text-destructive" />
+                </div>
+                <h2 className="heading-section text-destructive">Delete Account</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Permanently delete your account and all associated data. This action cannot be undone.
+              </p>
+              <DeleteAccountDialog onDelete={async () => {
+                try {
+                  // Delete user's data from database tables
+                  const userId = user?.id;
+                  if (userId) {
+                    // Delete mini_moves first (depends on weekly_entries)
+                    await supabase.from('mini_moves').delete().eq('user_id', userId);
+                    // Delete weekly_entries
+                    await supabase.from('weekly_entries').delete().eq('user_id', userId);
+                    // Delete group_members
+                    await supabase.from('group_members').delete().eq('user_id', userId);
+                    // Delete profile
+                    await supabase.from('profiles').delete().eq('user_id', userId);
+                  }
+                  // Sign out
+                  await supabase.auth.signOut();
+                  toast({
+                    title: "Account deleted",
+                    description: "Your account and data have been removed."
+                  });
+                } catch (error: any) {
+                  toast({
+                    title: "Error",
+                    description: error.message,
+                    variant: "destructive"
+                  });
+                }
+              }} />
+            </section>
           </div>}
       </div>
     </AppLayout>;
@@ -411,4 +464,55 @@ function EditableField({
         {value ? <p className="text-body whitespace-pre-wrap">{value}</p> : <p className="text-muted-foreground italic">{placeholder || 'Click to edit...'}</p>}
       </div>
     </div>;
+}
+
+// Delete Account Dialog Component
+interface DeleteAccountDialogProps {
+  onDelete: () => Promise<void>;
+}
+
+function DeleteAccountDialog({ onDelete }: DeleteAccountDialogProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    await onDelete();
+    setIsDeleting(false);
+  };
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <button className="btn-secondary border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive flex items-center gap-2">
+          <Trash2 className="h-4 w-4" />
+          Delete My Account
+        </button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-destructive">Delete Account?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action is <strong>permanent and cannot be undone</strong>. All your data including your profile, weekly entries, mini-moves, and group memberships will be permanently deleted.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {isDeleting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Deleting...
+              </>
+            ) : (
+              'Yes, Delete My Account'
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
