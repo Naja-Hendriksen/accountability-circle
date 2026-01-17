@@ -135,16 +135,34 @@ const AdminApplications = () => {
     enabled: isAdmin === true,
   });
 
+  // Send email notification
+  const sendNotification = async (email: string, name: string, status: ApplicationStatus) => {
+    try {
+      const { error } = await supabase.functions.invoke("send-status-notification", {
+        body: { email, name, status },
+      });
+      if (error) {
+        console.error("Error sending notification:", error);
+      }
+    } catch (err) {
+      console.error("Failed to send notification:", err);
+    }
+  };
+
   // Update application status with audit logging
   const updateStatusMutation = useMutation({
     mutationFn: async ({ 
       id, 
       status, 
-      oldStatus 
+      oldStatus,
+      email,
+      name,
     }: { 
       id: string; 
       status: ApplicationStatus; 
       oldStatus?: string;
+      email: string;
+      name: string;
     }) => {
       const { error } = await supabase
         .from("applications")
@@ -160,6 +178,9 @@ const AdminApplications = () => {
         oldValue: { status: oldStatus },
         newValue: { status },
       });
+
+      // Send email notification (fire and forget)
+      sendNotification(email, name, status);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
@@ -189,7 +210,7 @@ const AdminApplications = () => {
         .in("id", ids);
       if (error) throw error;
       
-      // Log each status change
+      // Log each status change and send notifications
       for (const app of appsToUpdate) {
         await logAction({
           action: "bulk_update_status",
@@ -199,6 +220,9 @@ const AdminApplications = () => {
           newValue: { status },
           metadata: { bulk_action: true, total_updated: ids.length },
         });
+        
+        // Send email notification (fire and forget)
+        sendNotification(app.email, app.full_name, status);
       }
     },
     onSuccess: (_, variables) => {
@@ -601,6 +625,8 @@ const AdminApplications = () => {
                                                 id: selectedApplication.id,
                                                 status: "pending",
                                                 oldStatus: selectedApplication.status,
+                                                email: selectedApplication.email,
+                                                name: selectedApplication.full_name,
                                               });
                                               setSelectedApplication({
                                                 ...selectedApplication,
@@ -621,6 +647,8 @@ const AdminApplications = () => {
                                                   id: selectedApplication.id,
                                                   status: "approved",
                                                   oldStatus: selectedApplication.status,
+                                                  email: selectedApplication.email,
+                                                  name: selectedApplication.full_name,
                                                 });
                                                 setSelectedApplication({
                                                   ...selectedApplication,
@@ -643,6 +671,8 @@ const AdminApplications = () => {
                                                   id: selectedApplication.id,
                                                   status: "rejected",
                                                   oldStatus: selectedApplication.status,
+                                                  email: selectedApplication.email,
+                                                  name: selectedApplication.full_name,
                                                 });
                                                 setSelectedApplication({
                                                   ...selectedApplication,
@@ -665,6 +695,8 @@ const AdminApplications = () => {
                                                   id: selectedApplication.id,
                                                   status: "removed",
                                                   oldStatus: selectedApplication.status,
+                                                  email: selectedApplication.email,
+                                                  name: selectedApplication.full_name,
                                                 });
                                                 setSelectedApplication({
                                                   ...selectedApplication,
@@ -694,6 +726,8 @@ const AdminApplications = () => {
                                       id: app.id,
                                       status: "pending",
                                       oldStatus: app.status,
+                                      email: app.email,
+                                      name: app.full_name,
                                     })
                                   }
                                   disabled={updateStatusMutation.isPending}
@@ -714,6 +748,8 @@ const AdminApplications = () => {
                                             id: app.id,
                                             status: "approved",
                                             oldStatus: app.status,
+                                            email: app.email,
+                                            name: app.full_name,
                                           })
                                         }
                                         disabled={updateStatusMutation.isPending}
@@ -729,6 +765,8 @@ const AdminApplications = () => {
                                             id: app.id,
                                             status: "rejected",
                                             oldStatus: app.status,
+                                            email: app.email,
+                                            name: app.full_name,
                                           })
                                         }
                                         disabled={updateStatusMutation.isPending}
@@ -746,6 +784,8 @@ const AdminApplications = () => {
                                         id: app.id,
                                         status: "removed",
                                         oldStatus: app.status,
+                                        email: app.email,
+                                        name: app.full_name,
                                       })
                                     }
                                     disabled={updateStatusMutation.isPending}
