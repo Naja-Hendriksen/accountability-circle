@@ -6,6 +6,7 @@ import { Navigate, Link } from "react-router-dom";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { Button } from "@/components/ui/button";
 import { ApplicationNotes } from "@/components/ApplicationNotes";
+import { ApplicationStats } from "@/components/ApplicationStats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -123,7 +124,21 @@ const AdminApplications = () => {
     enabled: !!user?.id,
   });
 
-  // Fetch applications
+  // Fetch ALL applications for stats (unfiltered)
+  const { data: allApplications } = useQuery({
+    queryKey: ["applications", "all-for-stats"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("applications")
+        .select("id, status, created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAdmin === true,
+  });
+
+  // Fetch applications with filter
   const { data: applications, isLoading: applicationsLoading } = useQuery({
     queryKey: ["applications", statusFilter],
     queryFn: async () => {
@@ -408,6 +423,13 @@ const AdminApplications = () => {
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </Link>
+
+          {/* Statistics Dashboard */}
+          {allApplications && allApplications.length > 0 && (
+            <div className="mb-8">
+              <ApplicationStats applications={allApplications} />
+            </div>
+          )}
 
           <Card>
             <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
