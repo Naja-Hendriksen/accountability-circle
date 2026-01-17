@@ -197,43 +197,6 @@ export default function Dashboard() {
         {isLoading ? <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div> : <div className="space-y-8">
-            {/* Profile Section */}
-            <section className="card-elevated p-4 animate-slide-up">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <Edit3 className="h-4 w-4 text-primary" />
-                </div>
-                <h2 className="heading-section text-base">Your Profile</h2>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <AvatarUpload
-                  currentAvatarUrl={profile?.avatar_url || null}
-                  name={profile?.name || ''}
-                  onUploadComplete={async (url) => {
-                    await updateProfile.mutateAsync({ avatar_url: url });
-                  }}
-                  size="md"
-                />
-                <div className="flex-1">
-                  <EditableField 
-                    label="Display Name" 
-                    value={formData.name} 
-                    isEditing={editingSection === 'name'} 
-                    onEdit={() => setEditingSection('name')} 
-                    onSave={() => saveProfileField('name')} 
-                    onCancel={() => setEditingSection(null)} 
-                    onChange={v => setFormData(p => ({
-                      ...p,
-                      name: v
-                    }))} 
-                    placeholder="Enter your name"
-                    compact
-                  />
-                </div>
-              </div>
-            </section>
-
             {/* Growth Goal & Monthly Milestones - Two Column Layout */}
             <div className="grid md:grid-cols-2 gap-6">
               {/* Growth Goal */}
@@ -377,6 +340,43 @@ export default function Dashboard() {
             ...p,
             self_care: v
           }))} placeholder="Rest, boundaries, joy—what's supporting your wellbeing?" multiline />
+            </section>
+
+            {/* Profile Section */}
+            <section className="card-elevated p-4 animate-slide-up">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-1.5 rounded-lg bg-primary/10">
+                  <Edit3 className="h-4 w-4 text-primary" />
+                </div>
+                <h2 className="heading-section text-base">Your Profile</h2>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <AvatarUpload
+                  currentAvatarUrl={profile?.avatar_url || null}
+                  name={profile?.name || ''}
+                  onUploadComplete={async (url) => {
+                    await updateProfile.mutateAsync({ avatar_url: url });
+                  }}
+                  size="md"
+                />
+                <div className="flex-1">
+                  <EditableField 
+                    label="Display Name" 
+                    value={formData.name} 
+                    isEditing={editingSection === 'name'} 
+                    onEdit={() => setEditingSection('name')} 
+                    onSave={() => saveProfileField('name')} 
+                    onCancel={() => setEditingSection(null)} 
+                    onChange={v => setFormData(p => ({
+                      ...p,
+                      name: v
+                    }))} 
+                    placeholder="Enter your name"
+                    compact
+                  />
+                </div>
+              </div>
             </section>
 
             {/* Delete Account */}
