@@ -271,10 +271,19 @@ const Landing = () => {
 
       {/* Footer */}
       <footer className="py-8 border-t border-border/50">
-        <div className="container mx-auto px-6 text-center">
-          <p className="text-sm text-muted-foreground">
-            © 2026 Women's Digital Creators Accountability Circle. All rights reserved.
-          </p>
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center gap-2">
+              <img src={logoImage} alt="Accountability Circle" className="w-8 h-8 object-contain" />
+              <span className="font-display text-foreground">Accountability Circle</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              © 2026 Women's Digital Creators Accountability Circle. All rights reserved.
+            </p>
+            <Link to="/privacy" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       </footer>
     </div>;
