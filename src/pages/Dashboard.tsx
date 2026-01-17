@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth';
 import AppLayout from '@/components/layout/AppLayout';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { useCurrentWeekEntry, useUpdateWeeklyEntry, useMiniMoves, useAddMiniMove, useToggleMiniMove, useDeleteMiniMove } from '@/hooks/useWeeklyEntry';
-import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2 } from 'lucide-react';
+import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import AvatarUpload from '@/components/AvatarUpload';
@@ -20,6 +20,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 export default function Dashboard() {
   const {
     user,
@@ -342,83 +347,96 @@ export default function Dashboard() {
           }))} placeholder="Rest, boundaries, joy—what's supporting your wellbeing?" multiline />
             </section>
 
-            {/* Profile Section */}
-            <section className="card-elevated p-4 animate-slide-up">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <Edit3 className="h-4 w-4 text-primary" />
+            {/* Account Settings - Collapsible */}
+            <Collapsible className="card-elevated overflow-hidden">
+              <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-muted">
+                    <Settings className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <h2 className="heading-section">Account Settings</h2>
                 </div>
-                <h2 className="heading-section text-base">Your Profile</h2>
-              </div>
+                <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-4 pb-4 space-y-6">
+                  {/* Profile Section */}
+                  <div className="pt-2">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-1.5 rounded-lg bg-primary/10">
+                        <Edit3 className="h-4 w-4 text-primary" />
+                      </div>
+                      <h3 className="font-medium text-sm">Your Profile</h3>
+                    </div>
 
-              <div className="flex items-center gap-4">
-                <AvatarUpload
-                  currentAvatarUrl={profile?.avatar_url || null}
-                  name={profile?.name || ''}
-                  onUploadComplete={async (url) => {
-                    await updateProfile.mutateAsync({ avatar_url: url });
-                  }}
-                  size="md"
-                />
-                <div className="flex-1">
-                  <EditableField 
-                    label="Display Name" 
-                    value={formData.name} 
-                    isEditing={editingSection === 'name'} 
-                    onEdit={() => setEditingSection('name')} 
-                    onSave={() => saveProfileField('name')} 
-                    onCancel={() => setEditingSection(null)} 
-                    onChange={v => setFormData(p => ({
-                      ...p,
-                      name: v
-                    }))} 
-                    placeholder="Enter your name"
-                    compact
-                  />
-                </div>
-              </div>
-            </section>
+                    <div className="flex items-center gap-4">
+                      <AvatarUpload
+                        currentAvatarUrl={profile?.avatar_url || null}
+                        name={profile?.name || ''}
+                        onUploadComplete={async (url) => {
+                          await updateProfile.mutateAsync({ avatar_url: url });
+                        }}
+                        size="md"
+                      />
+                      <div className="flex-1">
+                        <EditableField 
+                          label="Display Name" 
+                          value={formData.name} 
+                          isEditing={editingSection === 'name'} 
+                          onEdit={() => setEditingSection('name')} 
+                          onSave={() => saveProfileField('name')} 
+                          onCancel={() => setEditingSection(null)} 
+                          onChange={v => setFormData(p => ({
+                            ...p,
+                            name: v
+                          }))} 
+                          placeholder="Enter your name"
+                          compact
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-            {/* Delete Account */}
-            <section className="card-elevated p-6 border-destructive/20">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-destructive/10">
-                  <Trash2 className="h-5 w-5 text-destructive" />
+                  {/* Divider */}
+                  <div className="border-t border-border" />
+
+                  {/* Delete Account */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="p-1.5 rounded-lg bg-destructive/10">
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </div>
+                      <h3 className="font-medium text-sm text-destructive">Delete Account</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Permanently delete your account and all associated data. This action cannot be undone.
+                    </p>
+                    <DeleteAccountDialog onDelete={async () => {
+                      try {
+                        const userId = user?.id;
+                        if (userId) {
+                          await supabase.from('mini_moves').delete().eq('user_id', userId);
+                          await supabase.from('weekly_entries').delete().eq('user_id', userId);
+                          await supabase.from('group_members').delete().eq('user_id', userId);
+                          await supabase.from('profiles').delete().eq('user_id', userId);
+                        }
+                        await supabase.auth.signOut();
+                        toast({
+                          title: "Account deleted",
+                          description: "Your account and data have been removed."
+                        });
+                      } catch (error: any) {
+                        toast({
+                          title: "Error",
+                          description: error.message,
+                          variant: "destructive"
+                        });
+                      }
+                    }} />
+                  </div>
                 </div>
-                <h2 className="heading-section text-destructive">Delete Account</h2>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">
-                Permanently delete your account and all associated data. This action cannot be undone.
-              </p>
-              <DeleteAccountDialog onDelete={async () => {
-                try {
-                  // Delete user's data from database tables
-                  const userId = user?.id;
-                  if (userId) {
-                    // Delete mini_moves first (depends on weekly_entries)
-                    await supabase.from('mini_moves').delete().eq('user_id', userId);
-                    // Delete weekly_entries
-                    await supabase.from('weekly_entries').delete().eq('user_id', userId);
-                    // Delete group_members
-                    await supabase.from('group_members').delete().eq('user_id', userId);
-                    // Delete profile
-                    await supabase.from('profiles').delete().eq('user_id', userId);
-                  }
-                  // Sign out
-                  await supabase.auth.signOut();
-                  toast({
-                    title: "Account deleted",
-                    description: "Your account and data have been removed."
-                  });
-                } catch (error: any) {
-                  toast({
-                    title: "Error",
-                    description: error.message,
-                    variant: "destructive"
-                  });
-                }
-              }} />
-            </section>
+              </CollapsibleContent>
+            </Collapsible>
           </div>}
       </div>
     </AppLayout>;
