@@ -348,18 +348,16 @@ export default function Dashboard() {
             </section>
 
             {/* Account Settings - Collapsible */}
-            <Collapsible defaultOpen={false} className="card-elevated overflow-hidden">
-              <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-muted">
-                    <Settings className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <h2 className="heading-section">Account Settings</h2>
+            <Collapsible defaultOpen={false} className="group/settings border-t border-border pt-6">
+              <CollapsibleTrigger className="w-full py-2 flex items-center justify-between text-muted-foreground hover:text-foreground transition-colors">
+                <div className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  <span className="text-sm font-medium">Account Settings</span>
                 </div>
-                <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/settings:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-4 pb-4 space-y-6">
+                <div className="mt-4 p-4 rounded-lg bg-card border border-border space-y-6">
                   {/* Profile Section */}
                   <div className="pt-2">
                     <div className="flex items-center gap-2 mb-3">
