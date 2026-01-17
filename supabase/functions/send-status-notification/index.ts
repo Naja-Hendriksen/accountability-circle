@@ -155,6 +155,42 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // First, create the email history record to get the ID for tracking
+    const { data: historyData, error: historyInsertError } = await supabaseAdmin
+      .from("email_history")
+      .insert({
+        application_id: applicationId || null,
+        recipient_email: email,
+        recipient_name: name,
+        template_key: status,
+        subject: emailContent.subject,
+        status: "pending",
+        sent_by: userId,
+      })
+      .select("id")
+      .single();
+
+    if (historyInsertError) {
+      console.error("Error creating email history:", historyInsertError);
+    }
+
+    const emailHistoryId = historyData?.id;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+
+    // Inject tracking pixel for open tracking
+    let trackedHtml = emailContent.html;
+    if (emailHistoryId) {
+      const trackingPixelUrl = `${supabaseUrl}/functions/v1/email-tracking/open/${emailHistoryId}`;
+      trackedHtml = trackedHtml + `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none;" alt="" />`;
+      
+      // Wrap links for click tracking
+      const clickTrackingBase = `${supabaseUrl}/functions/v1/email-tracking/click/${emailHistoryId}?url=`;
+      trackedHtml = trackedHtml.replace(
+        /href="(https?:\/\/[^"]+)"/g,
+        (match, url) => `href="${clickTrackingBase}${encodeURIComponent(url)}"`
+      );
+    }
+
     let emailError: string | null = null;
     let emailStatus = "sent";
 
@@ -163,7 +199,7 @@ const handler = async (req: Request): Promise<Response> => {
         from: "Accountability Circle <onboarding@resend.dev>",
         to: [email],
         subject: emailContent.subject,
-        html: emailContent.html,
+        html: trackedHtml,
       });
 
       console.log("Email sent successfully:", emailResponse);
@@ -173,22 +209,19 @@ const handler = async (req: Request): Promise<Response> => {
       emailStatus = "failed";
     }
 
-    // Log email to history
-    const { error: historyError } = await supabaseAdmin
-      .from("email_history")
-      .insert({
-        application_id: applicationId || null,
-        recipient_email: email,
-        recipient_name: name,
-        template_key: status,
-        subject: emailContent.subject,
-        status: emailStatus,
-        sent_by: userId,
-        error_message: emailError,
-      });
+    // Update email history with final status
+    if (emailHistoryId) {
+      const { error: historyError } = await supabaseAdmin
+        .from("email_history")
+        .update({
+          status: emailStatus,
+          error_message: emailError,
+        })
+        .eq("id", emailHistoryId);
 
-    if (historyError) {
-      console.error("Error logging email history:", historyError);
+      if (historyError) {
+        console.error("Error updating email history:", historyError);
+      }
     }
 
     if (emailError) {
