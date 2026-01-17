@@ -3,16 +3,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Check, X, Users, Target, Heart, Calendar, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import najaPhoto from "@/assets/naja-facilitator.jpg";
+import logoImage from "@/assets/accountability-circle-logo.png";
+
 const Landing = () => {
   return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Users className="w-4 h-4 text-primary" />
-            </div>
-            <span className="font-display text-lg text-foreground">Accountability Circle</span>
+            <img src={logoImage} alt="Accountability Circle" className="w-10 h-10 object-contain" />
+            <span className="font-display text-lg text-foreground hidden sm:inline">Accountability Circle</span>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" asChild>
