@@ -2,7 +2,8 @@ import { ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
-import { LayoutDashboard, Users, LogOut, Leaf, Menu, X, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Menu, X, Shield } from 'lucide-react';
+import logo from '@/assets/accountability-circle-logo.png';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -29,9 +30,7 @@ export default function AppLayout({
           {/* Logo */}
           <div className="flex h-20 items-center px-6 border-b border-sidebar-border">
             <Link to="/dashboard" className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                <Leaf className="h-5 w-5 text-primary" />
-              </div>
+              <img src={logo} alt="Accountability Circle" className="h-10 w-auto" />
               <span className="font-display text-xl font-semibold text-sidebar-foreground">
                 Circle
               </span>
@@ -73,9 +72,7 @@ export default function AppLayout({
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-background border-b border-border">
         <div className="flex items-center justify-between h-16 px-4">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
-              <Leaf className="h-4 w-4 text-primary" />
-            </div>
+            <img src={logo} alt="Accountability Circle" className="h-8 w-auto" />
             <span className="font-display text-lg font-semibold">Accountability Circle</span>
           </Link>
           <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 rounded-lg text-foreground hover:bg-muted">
