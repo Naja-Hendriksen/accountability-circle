@@ -4,7 +4,6 @@ import { Check, X, Users, Target, Heart, Calendar, Sparkles } from "lucide-react
 import { Link } from "react-router-dom";
 import najaPhoto from "@/assets/naja-facilitator.jpg";
 import logoImage from "@/assets/accountability-circle-logo.png";
-
 const Landing = () => {
   return <div className="min-h-screen bg-background">
       {/* Header */}
@@ -190,7 +189,7 @@ const Landing = () => {
                   </div>
                   <div className="text-center md:text-left">
                     <p className="text-lg text-foreground/80 leading-relaxed">Hi, I'm Naja! I'm a mum of two, building my own fully digital business while juggling life and family. I've been creating online courses, video lessons, digital downloads, newsletters, websites and other digital assets, so I know what it's like to try to figure it all out on the go.</p>
-                    <p className="text-lg text-foreground/80 leading-relaxed mt-4">I am looking for a small, curated group of women who are ready to support each other, stay accountable and grow their businesses together. I'll of course share what I've learned along the way, but mostly I am here to facilitate and join in our mutually supportive Accountability Circle.</p>
+                    <p className="text-lg text-foreground/80 leading-relaxed mt-4">I am looking for a small, curated group of women who are ready to support each other, stay accountable and grow their businesses together. I'll of course share what I've learned along the way, as well as be here to run our mutually supportive Accountability Circle.</p>
                     <p className="text-lg text-primary font-medium mt-4">I just know we can do more when we share the journey.</p>
                   </div>
                 </div>
