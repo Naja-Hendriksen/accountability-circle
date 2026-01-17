@@ -29,7 +29,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Eye, CheckCircle, XCircle, Clock, Loader2, Trash2, RotateCcw } from "lucide-react";
+import { ArrowLeft, Eye, CheckCircle, XCircle, Clock, Loader2, Trash2, RotateCcw, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -73,6 +74,7 @@ const AdminApplications = () => {
   const queryClient = useQueryClient();
   const { logAction } = useAuditLog();
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const [viewedApplications, setViewedApplications] = useState<Set<string>>(new Set());
 
@@ -209,33 +211,64 @@ const AdminApplications = () => {
           </Link>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle className="text-2xl font-display">
                 Application Submissions
               </CardTitle>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Active</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="removed">Removed</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name or email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 w-full sm:w-[250px]"
+                  />
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Active</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="removed">Removed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
             <CardContent>
-              {applicationsLoading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-              ) : !applications?.length ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  No applications found.
-                </div>
-              ) : (
+              {(() => {
+                const filteredApplications = applications?.filter((app) => {
+                  if (!searchQuery.trim()) return true;
+                  const query = searchQuery.toLowerCase();
+                  return (
+                    app.full_name.toLowerCase().includes(query) ||
+                    app.email.toLowerCase().includes(query)
+                  );
+                });
+
+                if (applicationsLoading) {
+                  return (
+                    <div className="flex justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                  );
+                }
+
+                if (!filteredApplications?.length) {
+                  return (
+                    <div className="text-center py-12 text-muted-foreground">
+                      {searchQuery.trim() 
+                        ? "No applications match your search." 
+                        : "No applications found."}
+                    </div>
+                  );
+                }
+
+                return (
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
@@ -250,7 +283,7 @@ const AdminApplications = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {applications.map((app) => (
+                      {filteredApplications.map((app) => (
                         <TableRow key={app.id}>
                           <TableCell className="whitespace-nowrap">
                             {format(new Date(app.created_at), "MMM d, yyyy")}
@@ -592,7 +625,8 @@ const AdminApplications = () => {
                     </TableBody>
                   </Table>
                 </div>
-              )}
+                );
+              })()}
             </CardContent>
           </Card>
         </div>
