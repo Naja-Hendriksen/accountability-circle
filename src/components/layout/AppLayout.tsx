@@ -34,8 +34,8 @@ export default function AppLayout({
           <div className="flex h-20 items-center px-6 border-b border-sidebar-border">
             <Link to="/dashboard" className="flex items-center gap-3">
               <img src={logo} alt="Accountability Circle" className="h-10 w-auto" />
-              <span className="font-display text-xl font-semibold text-sidebar-foreground">
-                Circle
+              <span className="font-display text-lg font-semibold text-sidebar-foreground">
+                Accountability Circle
               </span>
             </Link>
           </div>
