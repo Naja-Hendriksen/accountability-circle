@@ -373,28 +373,33 @@ function WeekSection({
 
           {/* Entry details */}
           {entry && (
-            <div className="grid sm:grid-cols-2 gap-4 mt-4">
-              {entry.obstacles && (
-                <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                    <span className="text-xs font-medium uppercase tracking-wide text-destructive">
-                      Obstacles
-                    </span>
+            <div className="space-y-4 mt-4">
+              {/* Obstacles & Wins - Side by side */}
+              {(entry.obstacles || entry.wins) && (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Obstacles
+                      </span>
+                    </div>
+                    <p className="text-sm text-foreground">
+                      {entry.obstacles || <span className="italic text-muted-foreground">None shared</span>}
+                    </p>
                   </div>
-                  <p className="text-sm text-foreground">{entry.obstacles}</p>
-                </div>
-              )}
 
-              {entry.wins && (
-                <div className="p-3 rounded-lg bg-terracotta-light/30 border border-accent/10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="h-4 w-4 text-accent" />
-                    <span className="text-xs font-medium uppercase tracking-wide text-accent">
-                      Wins
-                    </span>
+                  <div className="p-3 rounded-lg bg-terracotta-light/30 border border-accent/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Trophy className="h-4 w-4 text-accent" />
+                      <span className="text-xs font-medium uppercase tracking-wide text-accent">
+                        Wins
+                      </span>
+                    </div>
+                    <p className="text-sm text-foreground">
+                      {entry.wins || <span className="italic text-muted-foreground">None shared</span>}
+                    </p>
                   </div>
-                  <p className="text-sm text-foreground">{entry.wins}</p>
                 </div>
               )}
 
