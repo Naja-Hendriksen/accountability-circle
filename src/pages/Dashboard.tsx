@@ -307,7 +307,7 @@ export default function Dashboard() {
                   </div>
                   <h2 className="heading-section">Wins & Reflections</h2>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">Celebrate your wins for the week. It does not have to be a Mini-Move, it can be personal reflections</p>
+                <p className="text-sm text-muted-foreground mb-4">Celebrate your wins this week—big or small, personal or project-related</p>
 
                 <EditableField value={formData.wins} isEditing={editingSection === 'wins'} onEdit={() => setEditingSection('wins')} onSave={() => saveWeeklyField('wins')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
               ...p,
