@@ -13,7 +13,6 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
   const [accessError, setAccessError] = useState<string | null>(null);
@@ -85,8 +84,8 @@ export default function Auth() {
           return;
         }
 
-        // Use name from application if not provided
-        const fullName = name.trim() || `${application.first_name} ${application.last_name}`.trim();
+        // Use name from approved application
+        const fullName = `${application.first_name} ${application.last_name}`.trim();
         
         const { error } = await signUp(email, password, fullName);
         if (error) throw error;
@@ -219,25 +218,6 @@ export default function Auth() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {isSignUp && (
-                <div>
-                  <label htmlFor="name" className="label-text">
-                    Full name (optional)
-                  </label>
-                  <input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Your name"
-                    className="input-field"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Leave blank to use the name from your application
-                  </p>
-                </div>
-              )}
-
               <div>
                 <label htmlFor="email" className="label-text">
                   Email address
