@@ -10,22 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import AvatarUpload from '@/components/AvatarUpload';
 import { supabase } from '@/integrations/supabase/client';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 export default function Dashboard() {
   const {
     user,
@@ -336,7 +322,7 @@ export default function Dashboard() {
                 <div className="p-2 rounded-lg bg-secondary">
                   <Heart className="h-5 w-5 text-accent" />
                 </div>
-                <h2 className="heading-section">Self-Care & Realisations</h2>
+                <h2 className="heading-section">Self-Care and rest</h2>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
                 How are you taking care of yourself? Any realisations or growth?
@@ -370,34 +356,22 @@ export default function Dashboard() {
 
                     <div className="flex items-start gap-4">
                       <div className="flex flex-col items-center gap-1">
-                        <AvatarUpload
-                          currentAvatarUrl={profile?.avatar_url || null}
-                          name={profile?.name || ''}
-                          onUploadComplete={async (url) => {
-                            await updateProfile.mutateAsync({ avatar_url: url });
-                          }}
-                          onRemove={async () => {
-                            await updateProfile.mutateAsync({ avatar_url: null });
-                          }}
-                          size="md"
-                        />
+                        <AvatarUpload currentAvatarUrl={profile?.avatar_url || null} name={profile?.name || ''} onUploadComplete={async url => {
+                      await updateProfile.mutateAsync({
+                        avatar_url: url
+                      });
+                    }} onRemove={async () => {
+                      await updateProfile.mutateAsync({
+                        avatar_url: null
+                      });
+                    }} size="md" />
                         <span className="text-xs text-muted-foreground">Click to change</span>
                       </div>
                       <div className="flex-1">
-                        <EditableField 
-                          label="Display Name" 
-                          value={formData.name} 
-                          isEditing={editingSection === 'name'} 
-                          onEdit={() => setEditingSection('name')} 
-                          onSave={() => saveProfileField('name')} 
-                          onCancel={() => setEditingSection(null)} 
-                          onChange={v => setFormData(p => ({
-                            ...p,
-                            name: v
-                          }))} 
-                          placeholder="Enter your name"
-                          compact
-                        />
+                        <EditableField label="Display Name" value={formData.name} isEditing={editingSection === 'name'} onEdit={() => setEditingSection('name')} onSave={() => saveProfileField('name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
+                      ...p,
+                      name: v
+                    }))} placeholder="Enter your name" compact />
                       </div>
                     </div>
                   </div>
@@ -422,11 +396,7 @@ export default function Dashboard() {
                     <p className="text-sm text-muted-foreground mb-4">
                       Request deletion of your account and all associated data. The facilitator will process your request.
                     </p>
-                    <RequestDeletionDialog 
-                      userId={user?.id || ''} 
-                      userEmail={user?.email || ''} 
-                      userName={profile?.name || ''} 
-                    />
+                    <RequestDeletionDialog userId={user?.id || ''} userEmail={user?.email || ''} userName={profile?.name || ''} />
                   </div>
                 </div>
               </CollapsibleContent>
@@ -488,24 +458,28 @@ function EditableField({
 interface EmailChangeSectionProps {
   currentEmail: string;
 }
-
-function EmailChangeSection({ currentEmail }: EmailChangeSectionProps) {
+function EmailChangeSection({
+  currentEmail
+}: EmailChangeSectionProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const handleUpdateEmail = async () => {
     if (!newEmail.trim() || newEmail === currentEmail) {
       setIsEditing(false);
       return;
     }
-
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      const {
+        error
+      } = await supabase.auth.updateUser({
+        email: newEmail
+      });
       if (error) throw error;
-      
       toast({
         title: "Confirmation email sent",
         description: "Please check your new email address to confirm the change."
@@ -522,9 +496,7 @@ function EmailChangeSection({ currentEmail }: EmailChangeSectionProps) {
       setIsSubmitting(false);
     }
   };
-
-  return (
-    <div>
+  return <div>
       <div className="flex items-center gap-2 mb-3">
         <div className="p-1.5 rounded-lg bg-primary/10">
           <Mail className="h-4 w-4 text-primary" />
@@ -532,53 +504,34 @@ function EmailChangeSection({ currentEmail }: EmailChangeSectionProps) {
         <h3 className="font-medium text-sm">Email Address</h3>
       </div>
 
-      {isEditing ? (
-        <div className="space-y-3">
+      {isEditing ? <div className="space-y-3">
           <div>
             <label className="label-text text-sm">Current email</label>
             <p className="text-sm text-muted-foreground">{currentEmail}</p>
           </div>
           <div>
             <label className="label-text text-sm">New email</label>
-            <input
-              type="email"
-              value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
-              placeholder="Enter new email address"
-              className="input-field text-sm"
-              autoFocus
-            />
+            <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="Enter new email address" className="input-field text-sm" autoFocus />
           </div>
           <div className="flex gap-2">
-            <button 
-              onClick={handleUpdateEmail} 
-              disabled={isSubmitting || !newEmail.trim()}
-              className="btn-primary flex items-center gap-2 text-sm py-1.5 px-3"
-            >
+            <button onClick={handleUpdateEmail} disabled={isSubmitting || !newEmail.trim()} className="btn-primary flex items-center gap-2 text-sm py-1.5 px-3">
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Update Email
             </button>
-            <button 
-              onClick={() => { setIsEditing(false); setNewEmail(''); }} 
-              className="btn-secondary text-sm py-1.5 px-3"
-            >
+            <button onClick={() => {
+          setIsEditing(false);
+          setNewEmail('');
+        }} className="btn-secondary text-sm py-1.5 px-3">
               Cancel
             </button>
           </div>
           <p className="text-xs text-muted-foreground">
             A confirmation link will be sent to your new email address.
           </p>
-        </div>
-      ) : (
-        <div 
-          onClick={() => setIsEditing(true)} 
-          className="p-2.5 rounded-lg border border-transparent bg-muted/30 hover:bg-muted/50 hover:border-border cursor-pointer transition-all duration-200"
-        >
+        </div> : <div onClick={() => setIsEditing(true)} className="p-2.5 rounded-lg border border-transparent bg-muted/30 hover:bg-muted/50 hover:border-border cursor-pointer transition-all duration-200">
           <p className="text-sm">{currentEmail}</p>
-        </div>
-      )}
-    </div>
-  );
+        </div>}
+    </div>;
 }
 
 // Request Deletion Dialog Component
@@ -587,29 +540,32 @@ interface RequestDeletionDialogProps {
   userEmail: string;
   userName: string;
 }
-
-function RequestDeletionDialog({ userId, userEmail, userName }: RequestDeletionDialogProps) {
+function RequestDeletionDialog({
+  userId,
+  userEmail,
+  userName
+}: RequestDeletionDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reason, setReason] = useState('');
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
 
   // Check if user already has a pending request
-  const { data: existingRequest } = useQuery({
+  const {
+    data: existingRequest
+  } = useQuery({
     queryKey: ['deletion-request', userId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('deletion_requests')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('status', 'pending')
-        .maybeSingle();
-      
+      const {
+        data,
+        error
+      } = await supabase.from('deletion_requests').select('*').eq('user_id', userId).eq('status', 'pending').maybeSingle();
       if (error) throw error;
       return data;
     },
-    enabled: !!userId,
+    enabled: !!userId
   });
-
   const handleSubmitRequest = async () => {
     if (!userId || !userEmail || !userName) {
       toast({
@@ -619,18 +575,16 @@ function RequestDeletionDialog({ userId, userEmail, userName }: RequestDeletionD
       });
       return;
     }
-
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
-        .from('deletion_requests')
-        .insert({
-          user_id: userId,
-          user_email: userEmail,
-          user_name: userName,
-          reason: reason || null,
-        });
-
+      const {
+        error
+      } = await supabase.from('deletion_requests').insert({
+        user_id: userId,
+        user_email: userEmail,
+        user_name: userName,
+        reason: reason || null
+      });
       if (error) throw error;
 
       // Notify facilitator via edge function (fire and forget)
@@ -638,10 +592,9 @@ function RequestDeletionDialog({ userId, userEmail, userName }: RequestDeletionD
         body: {
           memberName: userName,
           memberEmail: userEmail,
-          reason: reason || undefined,
-        },
+          reason: reason || undefined
+        }
       }).catch(err => console.error('Failed to send admin notification:', err));
-
       toast({
         title: "Request submitted",
         description: "Your account deletion request has been sent to the facilitator."
@@ -656,22 +609,17 @@ function RequestDeletionDialog({ userId, userEmail, userName }: RequestDeletionD
       setIsSubmitting(false);
     }
   };
-
   if (existingRequest) {
-    return (
-      <div className="p-3 rounded-lg bg-muted/50 border border-border">
+    return <div className="p-3 rounded-lg bg-muted/50 border border-border">
         <p className="text-sm text-muted-foreground">
           Your deletion request has been submitted and is awaiting processing by the facilitator.
         </p>
         <p className="text-xs text-muted-foreground mt-2">
           Submitted: {new Date(existingRequest.requested_at).toLocaleDateString()}
         </p>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <AlertDialog>
+  return <AlertDialog>
       <AlertDialogTrigger asChild>
         <button className="btn-secondary border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive flex items-center gap-2">
           <Trash2 className="h-4 w-4" />
@@ -687,31 +635,17 @@ function RequestDeletionDialog({ userId, userEmail, userName }: RequestDeletionD
         </AlertDialogHeader>
         <div className="py-4">
           <label className="text-sm font-medium mb-2 block">Reason for leaving (optional)</label>
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Share any feedback about your experience..."
-            className="input-field resize-y min-h-[80px] text-sm"
-          />
+          <textarea value={reason} onChange={e => setReason(e.target.value)} placeholder="Share any feedback about your experience..." className="input-field resize-y min-h-[80px] text-sm" />
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleSubmitRequest}
-            disabled={isSubmitting}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {isSubmitting ? (
-              <>
+          <AlertDialogAction onClick={handleSubmitRequest} disabled={isSubmitting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            {isSubmitting ? <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 Submitting...
-              </>
-            ) : (
-              'Submit Request'
-            )}
+              </> : 'Submit Request'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
-    </AlertDialog>
-  );
+    </AlertDialog>;
 }
