@@ -212,7 +212,7 @@ export default function Auth() {
             {isSignUp && !accessError && (
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
                 <p className="text-sm text-foreground">
-                  <strong>First time here?</strong> Create your account using the same email address from your approved application.
+                  <strong>First time here?</strong> Congratulations on being accepted into the Accountability Circle! Please create your account below using the same email address from your approved application.
                 </p>
               </div>
             )}
