@@ -166,6 +166,22 @@ const Apply = () => {
 
       if (error) throw error;
 
+      // Notify admin about new application (fire and forget - don't block user)
+      supabase.functions.invoke("notify-new-application", {
+        body: {
+          firstName,
+          lastName,
+          email,
+          location,
+          availability,
+          commitmentLevel: commitmentLevel[0],
+          growthGoal,
+          digitalProduct,
+        },
+      }).catch((notifyError) => {
+        console.error("Failed to send admin notification:", notifyError);
+      });
+
       // Navigate to thank you page
       navigate("/application-submitted");
     } catch (error) {
