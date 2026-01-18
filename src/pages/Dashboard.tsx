@@ -325,7 +325,7 @@ export default function Dashboard() {
                 <h2 className="heading-section">Self-Care Looks Like</h2>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                What does self-care look like for you this week?
+                Self-care is not optional, it is strategic. How are you nurturing yourself this week?
               </p>
 
               <EditableField value={formData.self_care} isEditing={editingSection === 'self_care'} onEdit={() => setEditingSection('self_care')} onSave={() => saveWeeklyField('self_care')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
