@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -19,6 +20,42 @@ interface ApplicationData {
   growthGoal: string;
   digitalProduct: string;
 }
+
+// Fallback template if database template is not available
+const getFallbackApplicantEmail = (firstName: string) => ({
+  subject: "We've Received Your Application!",
+  html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+    <h1 style="color: #333; margin-bottom: 24px;">
+      Thank You for Applying, ${firstName}!
+    </h1>
+    
+    <p style="font-size: 16px; line-height: 1.6; color: #555;">
+      We've received your application to join the Accountability Circle. Thank you for taking the time to share your goals and journey with us.
+    </p>
+    
+    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #007bff;">
+      <h3 style="color: #333; margin-top: 0; margin-bottom: 12px;">What happens next?</h3>
+      <p style="font-size: 15px; line-height: 1.6; color: #555; margin: 0;">
+        Your application is now pending review. You'll hear back from us within <strong>3-5 working days</strong> via email.
+      </p>
+    </div>
+    
+    <p style="font-size: 16px; line-height: 1.6; color: #555;">
+      In the meantime, if you have any questions, feel free to reach out.
+    </p>
+    
+    <p style="font-size: 16px; line-height: 1.6; color: #555; margin-top: 32px;">
+      Warm regards,<br/>
+      <strong>The Accountability Circle Team</strong>
+    </p>
+    
+    <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 32px 0;" />
+    
+    <p style="font-size: 12px; color: #999; text-align: center;">
+      This is an automated confirmation email. Please do not reply directly to this message.
+    </p>
+  </div>`,
+});
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -43,10 +80,16 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Create Supabase client for fetching templates
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
     const fullName = `${applicationData.firstName} ${applicationData.lastName}`;
     const firstName = applicationData.firstName;
     
-    // Build the admin notification email
+    // Build the admin notification email (not editable via templates)
     const adminEmailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #333; border-bottom: 2px solid #e5e5e5; padding-bottom: 10px;">
@@ -100,40 +143,29 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
-    // Build the applicant confirmation email
-    const applicantEmailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-        <h1 style="color: #333; margin-bottom: 24px;">
-          Thank You for Applying, ${firstName}!
-        </h1>
-        
-        <p style="font-size: 16px; line-height: 1.6; color: #555;">
-          We've received your application to join the Accountability Circle. Thank you for taking the time to share your goals and journey with us.
-        </p>
-        
-        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #007bff;">
-          <h3 style="color: #333; margin-top: 0; margin-bottom: 12px;">What happens next?</h3>
-          <p style="font-size: 15px; line-height: 1.6; color: #555; margin: 0;">
-            Your application is now pending review. You'll hear back from us within <strong>3-5 working days</strong> via email.
-          </p>
-        </div>
-        
-        <p style="font-size: 16px; line-height: 1.6; color: #555;">
-          In the meantime, if you have any questions, feel free to reach out.
-        </p>
-        
-        <p style="font-size: 16px; line-height: 1.6; color: #555; margin-top: 32px;">
-          Warm regards,<br/>
-          <strong>The Accountability Circle Team</strong>
-        </p>
-        
-        <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 32px 0;" />
-        
-        <p style="font-size: 12px; color: #999; text-align: center;">
-          This is an automated confirmation email. Please do not reply directly to this message.
-        </p>
-      </div>
-    `;
+    // Fetch applicant confirmation template from database
+    let applicantEmailContent = getFallbackApplicantEmail(firstName);
+    
+    const { data: template, error: templateError } = await supabaseAdmin
+      .from("email_templates")
+      .select("subject, html_content")
+      .eq("template_key", "application_received")
+      .maybeSingle();
+
+    if (templateError) {
+      console.error("Error fetching template:", templateError);
+    }
+
+    if (template) {
+      // Replace {{name}} placeholder with actual first name
+      applicantEmailContent = {
+        subject: template.subject.replace(/\{\{name\}\}/g, firstName),
+        html: template.html_content.replace(/\{\{name\}\}/g, firstName),
+      };
+      console.log("Using database template for application_received");
+    } else {
+      console.log("Using fallback template for application_received");
+    }
 
     // Send both emails in parallel
     const [adminResult, applicantResult] = await Promise.allSettled([
@@ -146,8 +178,8 @@ const handler = async (req: Request): Promise<Response> => {
       resend.emails.send({
         from: "Accountability Circle <onboarding@resend.dev>",
         to: [applicationData.email],
-        subject: "We've Received Your Application!",
-        html: applicantEmailHtml,
+        subject: applicantEmailContent.subject,
+        html: applicantEmailContent.html,
       }),
     ]);
 
