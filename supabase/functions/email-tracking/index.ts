@@ -67,6 +67,31 @@ const handler = async (req: Request): Promise<Response> => {
         return new Response("Missing redirect URL", { status: 400 });
       }
 
+      // Validate redirect URL to prevent open redirect attacks
+      const allowedDomains = [
+        "id-preview--01c31deb-9b7d-4cf9-9561-907610f4aa1c.lovable.app",
+        "lovable.app",
+        "accountabilitycircle.com", // Add your custom domain when applicable
+      ];
+      
+      let isValidRedirect = false;
+      try {
+        const parsedUrl = new URL(redirectUrl);
+        // Check if the hostname ends with any allowed domain
+        isValidRedirect = allowedDomains.some(domain => 
+          parsedUrl.hostname === domain || parsedUrl.hostname.endsWith(`.${domain}`)
+        );
+      } catch {
+        // Invalid URL format
+        console.error("Invalid redirect URL format:", redirectUrl);
+        return new Response("Invalid redirect URL", { status: 400 });
+      }
+
+      if (!isValidRedirect) {
+        console.warn("Blocked redirect to untrusted domain:", redirectUrl);
+        return new Response("Redirect to untrusted domain not allowed", { status: 403 });
+      }
+
       // Log the click
       await supabaseAdmin
         .from("email_clicks")
@@ -89,7 +114,7 @@ const handler = async (req: Request): Promise<Response> => {
           .eq("id", emailHistoryId);
       }
 
-      // Redirect to the original URL
+      // Redirect to the validated URL
       return new Response(null, {
         status: 302,
         headers: {
