@@ -17,6 +17,26 @@ interface StatusNotificationRequest {
   applicationId?: string;
 }
 
+// Generate HMAC-SHA256 signature for email tracking
+async function generateHmacSignature(emailHistoryId: string, secret: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secret);
+  const messageData = encoder.encode(emailHistoryId);
+  
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  
+  const signatureBuffer = await crypto.subtle.sign("HMAC", key, messageData);
+  return Array.from(new Uint8Array(signatureBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 // Fallback templates if database templates are not available
 const getFallbackEmailContent = (name: string, status: string) => {
   const firstName = name.split(" ")[0];
@@ -176,19 +196,30 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailHistoryId = historyData?.id;
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const trackingSecret = Deno.env.get("EMAIL_TRACKING_SECRET");
 
     // Inject tracking pixel for open tracking
     let trackedHtml = emailContent.html;
-    if (emailHistoryId) {
-      const trackingPixelUrl = `${supabaseUrl}/functions/v1/email-tracking/open/${emailHistoryId}`;
+    if (emailHistoryId && trackingSecret) {
+      // Generate HMAC signature for this email
+      const signature = await generateHmacSignature(emailHistoryId, trackingSecret);
+      
+      const trackingPixelUrl = `${supabaseUrl}/functions/v1/email-tracking/open/${emailHistoryId}?sig=${signature}`;
       trackedHtml = trackedHtml + `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none;" alt="" />`;
       
-      // Wrap links for click tracking
-      const clickTrackingBase = `${supabaseUrl}/functions/v1/email-tracking/click/${emailHistoryId}?url=`;
+      // Wrap links for click tracking (signature is the same for all links in this email)
+      const clickTrackingBase = `${supabaseUrl}/functions/v1/email-tracking/click/${emailHistoryId}?sig=${signature}&url=`;
       trackedHtml = trackedHtml.replace(
         /href="(https?:\/\/[^"]+)"/g,
         (match, url) => `href="${clickTrackingBase}${encodeURIComponent(url)}"`
       );
+      
+      console.log("Added signed tracking to email:", emailHistoryId);
+    } else if (emailHistoryId) {
+      // Fallback: add unsigned tracking (will not be recorded by updated tracking function)
+      console.warn("EMAIL_TRACKING_SECRET not configured, tracking will not work");
+      const trackingPixelUrl = `${supabaseUrl}/functions/v1/email-tracking/open/${emailHistoryId}`;
+      trackedHtml = trackedHtml + `<img src="${trackingPixelUrl}" width="1" height="1" style="display:none;" alt="" />`;
     }
 
     let emailError: string | null = null;
