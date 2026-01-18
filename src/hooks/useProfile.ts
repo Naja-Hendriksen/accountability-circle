@@ -9,6 +9,7 @@ export interface Profile {
   avatar_url: string | null;
   growth_goal: string | null;
   monthly_milestones: string | null;
+  email_notifications_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
