@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Navigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Navigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, UserPlus, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import logo from '@/assets/accountability-circle-logo.png';
@@ -9,11 +9,12 @@ import logo from '@/assets/accountability-circle-logo.png';
 export default function Auth() {
   const { user, loading, signIn, signUp } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
 
   if (loading) {
     return (
@@ -105,15 +106,57 @@ export default function Auth() {
             <h1 className="font-display text-3xl font-semibold text-foreground">Accountability Circle</h1>
           </div>
 
+          {/* Mode Toggle Tabs */}
+          <div className="flex mb-6 bg-muted rounded-lg p-1">
+            <button
+              type="button"
+              onClick={() => {
+                setIsSignUp(false);
+                setPassword('');
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all ${
+                !isSignUp 
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <LogIn className="h-4 w-4" />
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsSignUp(true);
+                setPassword('');
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all ${
+                isSignUp 
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <UserPlus className="h-4 w-4" />
+              Create Account
+            </button>
+          </div>
+
           <div className="card-elevated p-8">
             <h2 className="heading-section text-center mb-2">
               {isSignUp ? 'Create your account' : 'Welcome back'}
             </h2>
             <p className="text-center text-muted-foreground mb-8">
               {isSignUp 
-                ? 'Sign up with your approved email' 
+                ? 'Use your approved application email' 
                 : 'Sign in to continue your journey'}
             </p>
+
+            {isSignUp && (
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <p className="text-sm text-foreground">
+                  <strong>First time here?</strong> Create your account using the same email address from your approved application.
+                </p>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {isSignUp && (
@@ -181,27 +224,10 @@ export default function Auth() {
               </button>
             </form>
 
-            <div className="mt-6 text-center space-y-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSignUp(!isSignUp);
-                  setPassword('');
-                }}
-                className="text-sm text-primary hover:text-primary/80 transition-colors"
-              >
-                {isSignUp 
-                  ? 'Already have an account? Sign in' 
-                  : 'Approved member? Create account'}
-              </button>
-              
-              {!isSignUp && (
-                <div>
-                  <Link to="/apply" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Want to join? Apply here
-                  </Link>
-                </div>
-              )}
+            <div className="mt-6 text-center">
+              <Link to="/apply" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Want to join? Apply here
+              </Link>
             </div>
           </div>
         </div>
