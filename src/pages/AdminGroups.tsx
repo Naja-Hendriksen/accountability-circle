@@ -87,29 +87,30 @@ export default function AdminGroups() {
   const { data: groupMembers = [] } = useQuery({
     queryKey: ['admin-group-members'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First fetch group members
+      const { data: members, error: membersError } = await supabase
         .from('group_members')
-        .select(`
-          id,
-          user_id,
-          group_id,
-          created_at,
-          profile:profiles!group_members_user_id_fkey(name, user_id)
-        `);
+        .select('id, user_id, group_id, created_at');
       
-      if (error) throw error;
+      if (membersError) throw membersError;
+      if (!members || members.length === 0) return [];
       
-      // Fetch emails for all members
-      const userIds = data?.map(m => m.user_id) || [];
-      const uniqueUserIds = [...new Set(userIds)];
+      // Then fetch profiles for those users
+      const userIds = [...new Set(members.map(m => m.user_id))];
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, name')
+        .in('user_id', userIds);
       
-      // We'll get emails from profiles since we can't query auth.users directly
-      const membersWithData = data?.map(member => ({
+      if (profilesError) throw profilesError;
+      
+      // Map profiles to members
+      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
+      
+      return members.map(member => ({
         ...member,
-        profile: Array.isArray(member.profile) ? member.profile[0] : member.profile,
-      })) || [];
-      
-      return membersWithData as GroupMember[];
+        profile: profileMap.get(member.user_id) || null,
+      })) as GroupMember[];
     },
     enabled: !!isAdmin,
   });
@@ -175,7 +176,13 @@ export default function AdminGroups() {
       const { error } = await supabase
         .from('group_members')
         .insert({ group_id: groupId, user_id: userId });
-      if (error) throw error;
+      if (error) {
+        // Handle duplicate key error
+        if (error.code === '23505') {
+          throw new Error('This user is already a member of this group');
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-group-members'] });
