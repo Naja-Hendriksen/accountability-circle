@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +50,7 @@ const countries = [
 
 const Apply = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Form state
@@ -165,25 +166,8 @@ const Apply = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Application Submitted!",
-        description: "Thank you for applying. We'll review your application and get back to you within 48 hours."
-      });
-
-      // Reset form
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setLocation("");
-      setAvailability("");
-      setCommitmentLevel([7]);
-      setCommitmentExplanation("");
-      setGrowthGoal("");
-      setDigitalProduct("");
-      setExcitement("");
-      setAgreeGuidelines("");
-      setConsentGiven(false);
-      setCaptchaValid(false);
+      // Navigate to thank you page
+      navigate("/application-submitted");
     } catch (error) {
       console.error("Error submitting application:", error);
       toast({
