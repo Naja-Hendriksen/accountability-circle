@@ -193,7 +193,7 @@ export default function Dashboard() {
         {/* Header */}
         <div className="mb-10 animate-fade-in">
           <h1 className="heading-display text-foreground mb-2">
-            Welcome back{profile?.name ? `, ${profile.name}` : ''}
+            Welcome back{profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}
           </h1>
           <p className="text-body text-muted-foreground">
             Week of {format(weekStart, 'MMM d')} – {format(weekEnd, 'MMM d, yyyy')}
