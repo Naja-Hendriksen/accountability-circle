@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import GroupView from "./pages/GroupView";
 import Apply from "./pages/Apply";
+import ApplicationSubmitted from "./pages/ApplicationSubmitted";
 import Privacy from "./pages/Privacy";
 import Guidelines from "./pages/Guidelines";
 import AdminApplications from "./pages/AdminApplications";
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/group" element={<GroupView />} />
             <Route path="/apply" element={<Apply />} />
+            <Route path="/application-submitted" element={<ApplicationSubmitted />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/guidelines" element={<Guidelines />} />
             <Route path="/admin/applications" element={<AdminApplications />} />
