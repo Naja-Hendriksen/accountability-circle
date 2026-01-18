@@ -386,16 +386,19 @@ export default function Dashboard() {
                   <div className="border-t border-border" />
 
                   {/* Email Notifications */}
-                  <NotificationPreferences 
-                    enabled={profile?.email_notifications_enabled ?? true}
-                    onToggle={async (enabled) => {
+                  <NotificationPreferencesSection 
+                    preference={profile?.notification_preference ?? 'instant'}
+                    onUpdate={async (preference) => {
                       try {
-                        await updateProfile.mutateAsync({ email_notifications_enabled: enabled });
+                        await updateProfile.mutateAsync({ notification_preference: preference });
+                        const messages = {
+                          instant: "You'll receive instant email notifications for new group questions.",
+                          digest: "You'll receive a weekly digest of new group questions every Monday.",
+                          off: "You won't receive email notifications for new group questions."
+                        };
                         toast({
-                          title: enabled ? "Notifications enabled" : "Notifications disabled",
-                          description: enabled 
-                            ? "You'll receive email notifications for new group questions." 
-                            : "You won't receive email notifications for new group questions."
+                          title: "Preferences updated",
+                          description: messages[preference]
                         });
                       } catch (error: any) {
                         toast({
@@ -560,54 +563,82 @@ function EmailChangeSection({
 }
 
 // Notification Preferences Component
-interface NotificationPreferencesProps {
-  enabled: boolean;
-  onToggle: (enabled: boolean) => void;
+import { NotificationPreference } from '@/hooks/useProfile';
+
+interface NotificationPreferencesSectionProps {
+  preference: NotificationPreference;
+  onUpdate: (preference: NotificationPreference) => void;
 }
-function NotificationPreferences({ enabled, onToggle }: NotificationPreferencesProps) {
+
+function NotificationPreferencesSection({ preference, onUpdate }: NotificationPreferencesSectionProps) {
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleToggle = async () => {
+  const handleUpdate = async (newPreference: NotificationPreference) => {
+    if (newPreference === preference) return;
     setIsUpdating(true);
     try {
-      await onToggle(!enabled);
+      await onUpdate(newPreference);
     } finally {
       setIsUpdating(false);
     }
   };
 
+  const options: { value: NotificationPreference; label: string; description: string; icon: typeof Bell }[] = [
+    {
+      value: 'instant',
+      label: 'Instant',
+      description: 'Get notified immediately',
+      icon: Bell
+    },
+    {
+      value: 'digest',
+      label: 'Weekly Digest',
+      description: 'Summary every Monday',
+      icon: Mail
+    },
+    {
+      value: 'off',
+      label: 'Off',
+      description: 'No email notifications',
+      icon: BellOff
+    }
+  ];
+
   return (
     <div>
       <div className="flex items-center gap-2 mb-3">
         <div className="p-1.5 rounded-lg bg-primary/10">
-          {enabled ? <Bell className="h-4 w-4 text-primary" /> : <BellOff className="h-4 w-4 text-muted-foreground" />}
+          <Bell className="h-4 w-4 text-primary" />
         </div>
         <h3 className="font-medium text-sm">Email Notifications</h3>
       </div>
-      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
-        <div>
-          <p className="text-sm font-medium">New group questions</p>
-          <p className="text-xs text-muted-foreground">
-            Get notified when someone posts a question in your group
-          </p>
-        </div>
-        <button
-          onClick={handleToggle}
-          disabled={isUpdating}
-          className={`
-            relative w-11 h-6 rounded-full transition-colors duration-200
-            ${enabled ? 'bg-primary' : 'bg-muted-foreground/30'}
-            ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-          `}
-        >
-          <span
-            className={`
-              absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm
-              transition-transform duration-200
-              ${enabled ? 'translate-x-5' : 'translate-x-0'}
-            `}
-          />
-        </button>
+      <p className="text-xs text-muted-foreground mb-3">
+        Choose how you want to be notified about new group questions
+      </p>
+      <div className="grid grid-cols-3 gap-2">
+        {options.map((option) => {
+          const Icon = option.icon;
+          const isSelected = preference === option.value;
+          return (
+            <button
+              key={option.value}
+              onClick={() => handleUpdate(option.value)}
+              disabled={isUpdating}
+              className={`
+                p-3 rounded-lg border text-left transition-all duration-200
+                ${isSelected 
+                  ? 'border-primary bg-primary/5 ring-1 ring-primary' 
+                  : 'border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50'
+                }
+                ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+              `}
+            >
+              <Icon className={`h-4 w-4 mb-2 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+              <p className={`text-sm font-medium ${isSelected ? 'text-primary' : ''}`}>{option.label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{option.description}</p>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

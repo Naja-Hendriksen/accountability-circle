@@ -193,6 +193,48 @@ export type Database = {
         }
         Relationships: []
       }
+      digest_queue: {
+        Row: {
+          author_name: string
+          created_at: string
+          group_id: string
+          id: string
+          question_content: string
+          question_id: string
+        }
+        Insert: {
+          author_name: string
+          created_at?: string
+          group_id: string
+          id?: string
+          question_content: string
+          question_id: string
+        }
+        Update: {
+          author_name?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          question_content?: string
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digest_queue_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "digest_queue_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "group_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_clicks: {
         Row: {
           clicked_at: string
@@ -509,33 +551,33 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
-          email_notifications_enabled: boolean
           growth_goal: string | null
           id: string
           monthly_milestones: string | null
           name: string
+          notification_preference: string
           updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
-          email_notifications_enabled?: boolean
           growth_goal?: string | null
           id?: string
           monthly_milestones?: string | null
           name?: string
+          notification_preference?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
-          email_notifications_enabled?: boolean
           growth_goal?: string | null
           id?: string
           monthly_milestones?: string | null
           name?: string
+          notification_preference?: string
           updated_at?: string
           user_id?: string
         }
