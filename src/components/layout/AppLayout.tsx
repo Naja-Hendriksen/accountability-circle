@@ -2,7 +2,7 @@ import { ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
-import { LayoutDashboard, Users, LogOut, Menu, X, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Menu, X, Shield, UsersRound } from 'lucide-react';
 import logo from '@/assets/accountability-circle-logo.png';
 
 interface AppLayoutProps {
@@ -20,7 +20,10 @@ export default function AppLayout({
   const navigation = [
     { name: 'My Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Group View', href: '/group', icon: Users },
-    ...(isAdmin ? [{ name: 'Applications', href: '/admin/applications', icon: Shield }] : []),
+    ...(isAdmin ? [
+      { name: 'Applications', href: '/admin/applications', icon: Shield },
+      { name: 'Groups', href: '/admin/groups', icon: UsersRound },
+    ] : []),
   ];
   const isActive = (href: string) => location.pathname === href;
   return <div className="min-h-screen bg-background">
