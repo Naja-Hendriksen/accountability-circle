@@ -102,6 +102,11 @@ export function DeletionRequests() {
         const userId = request.user_id;
         
         // Delete in correct order to respect foreign keys
+        // First delete answers (they reference questions)
+        await supabase.from("group_answers").delete().eq("user_id", userId);
+        // Then delete questions
+        await supabase.from("group_questions").delete().eq("user_id", userId);
+        // Delete other user data
         await supabase.from("mini_moves").delete().eq("user_id", userId);
         await supabase.from("weekly_entries").delete().eq("user_id", userId);
         await supabase.from("group_members").delete().eq("user_id", userId);
@@ -276,7 +281,7 @@ export function DeletionRequests() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Confirm Account Deletion</AlertDialogTitle>
                               <AlertDialogDescription>
-                                This will permanently delete all data for <strong>{request.user_name}</strong> ({request.user_email}), including their profile, weekly entries, mini-moves, and group memberships.
+                                This will permanently delete all data for <strong>{request.user_name}</strong> ({request.user_email}), including their profile, weekly entries, mini-moves, group questions & answers, and group memberships.
                                 <br /><br />
                                 <strong>This action cannot be undone.</strong>
                               </AlertDialogDescription>
