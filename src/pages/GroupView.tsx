@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import AppLayout from '@/components/layout/AppLayout';
 import { useGroupMembers, GroupMemberData } from '@/hooks/useGroupMembers';
+import AskTheGroup from '@/components/AskTheGroup';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Loader2, 
   Users, 
@@ -17,7 +20,8 @@ import {
   Check,
   X,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  MessageCircle
 } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
 
@@ -26,6 +30,22 @@ export default function GroupView() {
   const { data: members = [], isLoading } = useGroupMembers();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [groupId, setGroupId] = useState<string | null>(null);
+
+  // Fetch user's group ID
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from('group_members')
+        .select('group_id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .single()
+        .then(({ data }) => {
+          if (data) setGroupId(data.group_id);
+        });
+    }
+  }, [user]);
 
   if (authLoading) {
     return (
@@ -68,44 +88,7 @@ export default function GroupView() {
           </p>
         </div>
 
-        {/* Search and Filter */}
-        <div className="mb-8 animate-slide-up">
-          <div className="card-elevated p-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by name..."
-                  className="input-field pl-10"
-                />
-              </div>
-              
-              {members.length > 0 && (
-                <select
-                  value={selectedMemberId || ''}
-                  onChange={(e) => setSelectedMemberId(e.target.value || null)}
-                  className="input-field sm:w-48"
-                >
-                  <option value="">All members</option>
-                  {members.map(m => (
-                    <option key={m.profile.user_id} value={m.profile.user_id}>
-                      {m.profile.name || 'Unnamed'}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : members.length === 0 ? (
+        {members.length === 0 && !isLoading ? (
           <div className="card-elevated p-12 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
               <Users className="h-8 w-8 text-muted-foreground" />
@@ -116,24 +99,88 @@ export default function GroupView() {
               Ask your facilitator to add you to a group.
             </p>
           </div>
-        ) : displayMembers.length === 0 ? (
-          <div className="card-elevated p-12 text-center">
-            <p className="text-body text-muted-foreground">
-              No members match your search.
-            </p>
-          </div>
         ) : (
-          <div className="space-y-6">
-            {displayMembers.map((member, index) => (
-              <MemberCard 
-                key={member.profile.user_id} 
-                member={member}
-                currentWeekDates={{ start: currentWeekStart, end: currentWeekEnd }}
-                previousWeekDates={{ start: previousWeekStart, end: previousWeekEnd }}
-                delay={index * 0.1}
-              />
-            ))}
-          </div>
+          <Tabs defaultValue="progress" className="space-y-6">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="progress" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Member Progress
+              </TabsTrigger>
+              <TabsTrigger value="ask" className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4" />
+                Ask The Group
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="progress" className="space-y-6">
+              {/* Search and Filter */}
+              <div className="animate-slide-up">
+                <div className="card-elevated p-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search by name..."
+                        className="input-field pl-10"
+                      />
+                    </div>
+                    
+                    {members.length > 0 && (
+                      <select
+                        value={selectedMemberId || ''}
+                        onChange={(e) => setSelectedMemberId(e.target.value || null)}
+                        className="input-field sm:w-48"
+                      >
+                        <option value="">All members</option>
+                        {members.map(m => (
+                          <option key={m.profile.user_id} value={m.profile.user_id}>
+                            {m.profile.name || 'Unnamed'}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {isLoading ? (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : displayMembers.length === 0 ? (
+                <div className="card-elevated p-12 text-center">
+                  <p className="text-body text-muted-foreground">
+                    No members match your search.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {displayMembers.map((member, index) => (
+                    <MemberCard 
+                      key={member.profile.user_id} 
+                      member={member}
+                      currentWeekDates={{ start: currentWeekStart, end: currentWeekEnd }}
+                      previousWeekDates={{ start: previousWeekStart, end: previousWeekEnd }}
+                      delay={index * 0.1}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="ask">
+              {groupId ? (
+                <AskTheGroup groupId={groupId} />
+              ) : (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </AppLayout>
