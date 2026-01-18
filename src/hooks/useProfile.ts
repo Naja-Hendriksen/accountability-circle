@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 
+export type NotificationPreference = 'instant' | 'digest' | 'off';
+
 export interface Profile {
   id: string;
   user_id: string;
@@ -9,7 +11,7 @@ export interface Profile {
   avatar_url: string | null;
   growth_goal: string | null;
   monthly_milestones: string | null;
-  email_notifications_enabled: boolean;
+  notification_preference: NotificationPreference;
   created_at: string;
   updated_at: string;
 }

@@ -104,32 +104,55 @@ const handler = async (req: Request): Promise<Response> => {
     const memberUserIds = groupMembers.map(m => m.user_id);
     const { data: memberProfiles, error: profilesError } = await supabaseAdmin
       .from("profiles")
-      .select("user_id, name, email_notifications_enabled")
+      .select("user_id, name, notification_preference")
       .in("user_id", memberUserIds);
 
     if (profilesError) {
       console.error("Error fetching member profiles:", profilesError);
     }
 
-    // Filter to only members with notifications enabled
+    // Separate members by notification preference
     const profilesMap = new Map((memberProfiles || []).map(p => [p.user_id, p]));
-    const membersWithNotifications = groupMembers.filter(m => {
+    
+    const instantMembers = groupMembers.filter(m => {
       const profile = profilesMap.get(m.user_id);
-      // Default to true if profile not found or field is null
-      return profile?.email_notifications_enabled !== false;
+      return profile?.notification_preference === 'instant' || !profile?.notification_preference;
     });
 
-    if (membersWithNotifications.length === 0) {
-      console.log("No members with notifications enabled");
+    const digestMembers = groupMembers.filter(m => {
+      const profile = profilesMap.get(m.user_id);
+      return profile?.notification_preference === 'digest';
+    });
+
+    // Queue question for digest members
+    if (digestMembers.length > 0) {
+      const { error: queueError } = await supabaseAdmin
+        .from("digest_queue")
+        .upsert({
+          group_id: groupId,
+          question_id: questionId,
+          author_name: authorName,
+          question_content: question.content
+        }, { onConflict: 'question_id' });
+
+      if (queueError) {
+        console.error("Error queuing for digest:", queueError);
+      } else {
+        console.log(`Question queued for ${digestMembers.length} digest subscribers`);
+      }
+    }
+
+    if (instantMembers.length === 0) {
+      console.log("No members with instant notifications enabled");
       return new Response(
-        JSON.stringify({ message: "No members with notifications enabled" }),
+        JSON.stringify({ message: "No instant notification members, question queued for digest" }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Get emails for members with notifications enabled
+    // Get emails for members with instant notifications
     const memberEmails: { email: string; firstName: string }[] = [];
-    for (const member of membersWithNotifications) {
+    for (const member of instantMembers) {
       const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(member.user_id);
       if (!userError && user?.email) {
         const profile = profilesMap.get(member.user_id);
