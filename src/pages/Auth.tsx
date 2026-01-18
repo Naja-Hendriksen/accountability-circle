@@ -8,16 +8,13 @@ export default function Auth() {
   const {
     user,
     loading,
-    signIn,
-    signUp
+    signIn
   } = useAuth();
   const {
     toast
   } = useToast();
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">
@@ -31,30 +28,8 @@ export default function Auth() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      if (isLogin) {
-        const {
-          error
-        } = await signIn(email, password);
-        if (error) throw error;
-      } else {
-        if (!name.trim()) {
-          toast({
-            title: "Name required",
-            description: "Please enter your name to create an account.",
-            variant: "destructive"
-          });
-          setSubmitting(false);
-          return;
-        }
-        const {
-          error
-        } = await signUp(email, password, name);
-        if (error) throw error;
-        toast({
-          title: "Welcome to the Circle!",
-          description: "Your account has been created successfully."
-        });
-      }
+      const { error } = await signIn(email, password);
+      if (error) throw error;
     } catch (error: any) {
       toast({
         title: "Error",
@@ -95,20 +70,13 @@ export default function Auth() {
 
           <div className="card-elevated p-8">
             <h2 className="heading-section text-center mb-2">
-              {isLogin ? 'Welcome back' : 'Join the collective'}
+              Welcome back
             </h2>
             <p className="text-center text-muted-foreground mb-8">
-              {isLogin ? 'Sign in to continue your journey' : 'Create your account to get started'}
+              Sign in to continue your journey
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {!isLogin && <div>
-                  <label htmlFor="name" className="label-text">
-                    Your name
-                  </label>
-                  <input id="name" type="text" value={name} onChange={e => setName(e.target.value)} placeholder="How should we call you?" className="input-field" required={!isLogin} />
-                </div>}
-
               <div>
                 <label htmlFor="email" className="label-text">
                   Email address
@@ -125,14 +93,14 @@ export default function Auth() {
 
               <button type="submit" disabled={submitting} className="btn-primary w-full flex items-center justify-center gap-2">
                 {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-                {isLogin ? 'Sign in' : 'Create account'}
+                Sign in
               </button>
             </form>
 
             <div className="mt-6 text-center">
-              <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-              </button>
+              <Link to="/apply" className="text-sm text-primary hover:text-primary/80 transition-colors">
+                Want to join? Apply here
+              </Link>
             </div>
           </div>
         </div>
