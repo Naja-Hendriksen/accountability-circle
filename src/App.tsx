@@ -12,6 +12,7 @@ import Apply from "./pages/Apply";
 import Privacy from "./pages/Privacy";
 import Guidelines from "./pages/Guidelines";
 import AdminApplications from "./pages/AdminApplications";
+import AdminGroups from "./pages/AdminGroups";
 import EmailTemplates from "./pages/EmailTemplates";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/guidelines" element={<Guidelines />} />
             <Route path="/admin/applications" element={<AdminApplications />} />
+            <Route path="/admin/groups" element={<AdminGroups />} />
             <Route path="/admin/email-templates" element={<EmailTemplates />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
