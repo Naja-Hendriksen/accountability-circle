@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
-import { Loader2, UserPlus, LogIn, AlertCircle } from 'lucide-react';
+import { Loader2, UserPlus, LogIn, AlertCircle, Check, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import logo from '@/assets/accountability-circle-logo.png';
@@ -12,10 +12,21 @@ export default function Auth() {
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
   const [accessError, setAccessError] = useState<string | null>(null);
+
+  // Password validation
+  const passwordChecks = {
+    minLength: password.length >= 8,
+    hasNumber: /\d/.test(password),
+    hasUppercase: /[A-Z]/.test(password),
+    hasLowercase: /[a-z]/.test(password),
+  };
+  const allPasswordChecksPassed = Object.values(passwordChecks).every(Boolean);
+  const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
 
   if (loading) {
     return (
@@ -36,6 +47,28 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
+        // Validate password requirements
+        if (!allPasswordChecksPassed) {
+          toast({
+            title: "Password requirements not met",
+            description: "Please ensure your password meets all requirements.",
+            variant: "destructive",
+          });
+          setSubmitting(false);
+          return;
+        }
+
+        if (!passwordsMatch) {
+          toast({
+            title: "Passwords don't match",
+            description: "Please make sure both passwords are identical.",
+            variant: "destructive",
+          });
+          setSubmitting(false);
+          return;
+        }
+
+        // Check if email is in approved applications
         // Check if email is in approved applications
         const { data: application, error: appError } = await supabase
           .from('applications')
@@ -66,6 +99,7 @@ export default function Auth() {
         // Switch to sign-in mode
         setIsSignUp(false);
         setPassword('');
+        setConfirmPassword('');
       } else {
         const { error } = await signIn(email, password);
         if (error) throw error;
@@ -117,6 +151,7 @@ export default function Auth() {
               onClick={() => {
                 setIsSignUp(false);
                 setPassword('');
+                setConfirmPassword('');
                 setAccessError(null);
               }}
               className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all ${
@@ -133,6 +168,7 @@ export default function Auth() {
               onClick={() => {
                 setIsSignUp(true);
                 setPassword('');
+                setConfirmPassword('');
                 setAccessError(null);
               }}
               className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all ${
@@ -234,14 +270,57 @@ export default function Auth() {
                   placeholder="••••••••"
                   className="input-field"
                   required
-                  minLength={6}
+                  minLength={isSignUp ? 8 : 6}
                 />
+                
+                {/* Password requirements checklist */}
+                {isSignUp && password.length > 0 && (
+                  <div className="mt-3 space-y-1.5">
+                    <PasswordCheck passed={passwordChecks.minLength} label="At least 8 characters" />
+                    <PasswordCheck passed={passwordChecks.hasUppercase} label="One uppercase letter" />
+                    <PasswordCheck passed={passwordChecks.hasLowercase} label="One lowercase letter" />
+                    <PasswordCheck passed={passwordChecks.hasNumber} label="One number" />
+                  </div>
+                )}
               </div>
+
+              {/* Confirm password field for signup */}
+              {isSignUp && (
+                <div>
+                  <label htmlFor="confirmPassword" className="label-text">
+                    Confirm password
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className={`input-field ${confirmPassword.length > 0 && !passwordsMatch ? 'border-destructive focus:ring-destructive' : ''}`}
+                    required
+                  />
+                  {confirmPassword.length > 0 && (
+                    <div className="mt-2 flex items-center gap-2">
+                      {passwordsMatch ? (
+                        <>
+                          <Check className="h-4 w-4 text-green-600" />
+                          <span className="text-xs text-green-600">Passwords match</span>
+                        </>
+                      ) : (
+                        <>
+                          <X className="h-4 w-4 text-destructive" />
+                          <span className="text-xs text-destructive">Passwords don't match</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <button
                 type="submit"
-                disabled={submitting}
-                className="btn-primary w-full flex items-center justify-center gap-2"
+                disabled={submitting || (isSignUp && (!allPasswordChecksPassed || !passwordsMatch))}
+                className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isSignUp ? 'Create account' : 'Sign in'}
@@ -256,6 +335,22 @@ export default function Auth() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Helper component for password requirements
+function PasswordCheck({ passed, label }: { passed: boolean; label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      {passed ? (
+        <Check className="h-3.5 w-3.5 text-green-600" />
+      ) : (
+        <X className="h-3.5 w-3.5 text-muted-foreground" />
+      )}
+      <span className={`text-xs ${passed ? 'text-green-600' : 'text-muted-foreground'}`}>
+        {label}
+      </span>
     </div>
   );
 }
