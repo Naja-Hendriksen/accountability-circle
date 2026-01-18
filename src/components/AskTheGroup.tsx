@@ -8,7 +8,9 @@ import {
   useAddAnswer,
   useDeleteQuestion,
   useDeleteAnswer,
-  GroupQuestion 
+  useToggleReaction,
+  GroupQuestion,
+  GroupAnswer
 } from '@/hooks/useGroupQuestions';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
@@ -20,7 +22,8 @@ import {
   Loader2,
   MessageSquarePlus,
   Search,
-  X
+  X,
+  Heart
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -201,10 +204,36 @@ function QuestionCard({ question, groupId, currentUserId, currentUserName, isAdm
   const addAnswer = useAddAnswer();
   const deleteQuestion = useDeleteQuestion();
   const deleteAnswer = useDeleteAnswer();
+  const toggleReaction = useToggleReaction();
   const { toast } = useToast();
 
   const canDeleteQuestion = currentUserId === question.user_id || isAdmin;
   const answerCount = question.answers?.length || 0;
+
+  const handleToggleLike = async (answerId?: string) => {
+    try {
+      if (answerId) {
+        const answer = question.answers?.find(a => a.id === answerId);
+        await toggleReaction.mutateAsync({
+          answerId,
+          groupId,
+          hasLiked: answer?.userHasLiked || false
+        });
+      } else {
+        await toggleReaction.mutateAsync({
+          questionId: question.id,
+          groupId,
+          hasLiked: question.userHasLiked || false
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleSubmitAnswer = async () => {
     if (!newAnswer.trim()) return;
@@ -286,6 +315,19 @@ function QuestionCard({ question, groupId, currentUserId, currentUserName, isAdm
             <p className="mt-2 text-foreground whitespace-pre-wrap">{question.content}</p>
             
             <div className="flex items-center gap-3 mt-3">
+              <button
+                onClick={() => handleToggleLike()}
+                disabled={toggleReaction.isPending}
+                className={`text-sm flex items-center gap-1 transition-colors ${
+                  question.userHasLiked 
+                    ? 'text-accent' 
+                    : 'text-muted-foreground hover:text-accent'
+                }`}
+              >
+                <Heart className={`h-4 w-4 ${question.userHasLiked ? 'fill-current' : ''}`} />
+                {(question.likeCount || 0) > 0 && <span>{question.likeCount}</span>}
+              </button>
+
               <button
                 onClick={() => setIsReplying(!isReplying)}
                 className="text-sm text-primary hover:underline flex items-center gap-1"
@@ -388,6 +430,20 @@ function QuestionCard({ question, groupId, currentUserId, currentUserName, isAdm
                       )}
                     </div>
                     <p className="mt-1 text-sm text-foreground whitespace-pre-wrap">{answer.content}</p>
+                    
+                    {/* Like button for answer */}
+                    <button
+                      onClick={() => handleToggleLike(answer.id)}
+                      disabled={toggleReaction.isPending}
+                      className={`mt-2 text-xs flex items-center gap-1 transition-colors ${
+                        answer.userHasLiked 
+                          ? 'text-accent' 
+                          : 'text-muted-foreground hover:text-accent'
+                      }`}
+                    >
+                      <Heart className={`h-3.5 w-3.5 ${answer.userHasLiked ? 'fill-current' : ''}`} />
+                      {(answer.likeCount || 0) > 0 && <span>{answer.likeCount}</span>}
+                    </button>
                   </div>
                 </div>
               </div>

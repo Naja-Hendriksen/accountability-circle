@@ -407,6 +407,48 @@ export type Database = {
           },
         ]
       }
+      group_reactions: {
+        Row: {
+          answer_id: string | null
+          created_at: string
+          id: string
+          question_id: string | null
+          reaction_type: string
+          user_id: string
+        }
+        Insert: {
+          answer_id?: string | null
+          created_at?: string
+          id?: string
+          question_id?: string | null
+          reaction_type?: string
+          user_id: string
+        }
+        Update: {
+          answer_id?: string | null
+          created_at?: string
+          id?: string
+          question_id?: string | null
+          reaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_reactions_answer_id_fkey"
+            columns: ["answer_id"]
+            isOneToOne: false
+            referencedRelation: "group_answers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_reactions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "group_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       groups: {
         Row: {
           created_at: string
