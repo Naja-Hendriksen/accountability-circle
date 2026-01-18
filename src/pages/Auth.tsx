@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
-import { Loader2, UserPlus, LogIn } from 'lucide-react';
+import { Loader2, UserPlus, LogIn, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import logo from '@/assets/accountability-circle-logo.png';
@@ -15,6 +15,7 @@ export default function Auth() {
   const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
+  const [accessError, setAccessError] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -31,6 +32,7 @@ export default function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setAccessError(null);
 
     try {
       if (isSignUp) {
@@ -45,7 +47,9 @@ export default function Auth() {
         if (appError) throw appError;
 
         if (!application) {
-          throw new Error('This email is not approved for sign-up. Please apply first or wait for approval.');
+          setAccessError('This email has not been granted access to the group. Please use the email you applied with, or apply below to become a member.');
+          setSubmitting(false);
+          return;
         }
 
         // Use name from application if not provided
@@ -113,6 +117,7 @@ export default function Auth() {
               onClick={() => {
                 setIsSignUp(false);
                 setPassword('');
+                setAccessError(null);
               }}
               className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all ${
                 !isSignUp 
@@ -128,6 +133,7 @@ export default function Auth() {
               onClick={() => {
                 setIsSignUp(true);
                 setPassword('');
+                setAccessError(null);
               }}
               className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all ${
                 isSignUp 
@@ -150,7 +156,25 @@ export default function Auth() {
                 : 'Sign in to continue your journey'}
             </p>
 
-            {isSignUp && (
+            {isSignUp && accessError && (
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-6">
+                <div className="flex gap-3">
+                  <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-foreground font-medium mb-1">Access Not Granted</p>
+                    <p className="text-sm text-muted-foreground">{accessError}</p>
+                    <Link 
+                      to="/apply" 
+                      className="inline-block mt-2 text-sm text-primary hover:text-primary/80 font-medium"
+                    >
+                      Apply to become a member →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {isSignUp && !accessError && (
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
                 <p className="text-sm text-foreground">
                   <strong>First time here?</strong> Create your account using the same email address from your approved application.
