@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { useProfile } from '@/hooks/useProfile';
 import { 
   useGroupQuestions, 
   useAddQuestion, 
@@ -29,11 +30,13 @@ interface AskTheGroupProps {
 export default function AskTheGroup({ groupId }: AskTheGroupProps) {
   const { user } = useAuth();
   const { data: isAdmin } = useIsAdmin();
+  const { data: profile } = useProfile();
   const { data: questions = [], isLoading } = useGroupQuestions(groupId);
   const addQuestion = useAddQuestion();
   const { toast } = useToast();
 
   const [newQuestion, setNewQuestion] = useState('');
+  const currentUserName = profile?.name || 'A member';
 
   const handleSubmitQuestion = async () => {
     if (!newQuestion.trim()) return;
@@ -116,6 +119,7 @@ export default function AskTheGroup({ groupId }: AskTheGroupProps) {
               question={question}
               groupId={groupId}
               currentUserId={user?.id}
+              currentUserName={currentUserName}
               isAdmin={isAdmin || false}
             />
           ))}
@@ -129,10 +133,11 @@ interface QuestionCardProps {
   question: GroupQuestion;
   groupId: string;
   currentUserId: string | undefined;
+  currentUserName: string;
   isAdmin: boolean;
 }
 
-function QuestionCard({ question, groupId, currentUserId, isAdmin }: QuestionCardProps) {
+function QuestionCard({ question, groupId, currentUserId, currentUserName, isAdmin }: QuestionCardProps) {
   const [showAnswers, setShowAnswers] = useState(true);
   const [newAnswer, setNewAnswer] = useState('');
   const [isReplying, setIsReplying] = useState(false);
@@ -149,7 +154,12 @@ function QuestionCard({ question, groupId, currentUserId, isAdmin }: QuestionCar
     if (!newAnswer.trim()) return;
 
     try {
-      await addAnswer.mutateAsync({ questionId: question.id, content: newAnswer, groupId });
+      await addAnswer.mutateAsync({ 
+        questionId: question.id, 
+        content: newAnswer, 
+        groupId,
+        replierName: currentUserName
+      });
       setNewAnswer('');
       setIsReplying(false);
       toast({
