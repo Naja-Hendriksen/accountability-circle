@@ -61,7 +61,7 @@ export default function AskTheGroup({ groupId }: AskTheGroupProps) {
     if (!newQuestion.trim()) return;
 
     try {
-      await addQuestion.mutateAsync({ groupId, content: newQuestion });
+      await addQuestion.mutateAsync({ groupId, content: newQuestion, authorName: currentUserName });
       setNewQuestion('');
       toast({
         title: "Question posted!",
