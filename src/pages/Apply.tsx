@@ -184,13 +184,23 @@ const Apply = () => {
 
       // Navigate to thank you page
       navigate("/application-submitted");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting application:", error);
-      toast({
-        title: "Submission Failed",
-        description: "There was an error submitting your application. Please try again.",
-        variant: "destructive"
-      });
+      
+      // Check for duplicate email error
+      if (error?.code === "23505" || error?.message?.includes("duplicate key") || error?.message?.includes("applications_email_unique")) {
+        toast({
+          title: "Application Already Exists",
+          description: "An application with this email address has already been submitted. If you have questions about your application status, please contact us.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Submission Failed",
+          description: "There was an error submitting your application. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
