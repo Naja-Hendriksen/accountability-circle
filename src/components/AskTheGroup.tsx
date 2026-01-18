@@ -18,7 +18,9 @@ import {
   ChevronDown,
   ChevronUp,
   Loader2,
-  MessageSquarePlus
+  MessageSquarePlus,
+  Search,
+  X
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -36,7 +38,21 @@ export default function AskTheGroup({ groupId }: AskTheGroupProps) {
   const { toast } = useToast();
 
   const [newQuestion, setNewQuestion] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const currentUserName = profile?.name || 'A member';
+
+  // Filter questions based on search query
+  const filteredQuestions = questions.filter(q => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    const matchesContent = q.content.toLowerCase().includes(query);
+    const matchesAuthor = q.profile?.name?.toLowerCase().includes(query);
+    const matchesAnswers = q.answers?.some(a => 
+      a.content.toLowerCase().includes(query) || 
+      a.profile?.name?.toLowerCase().includes(query)
+    );
+    return matchesContent || matchesAuthor || matchesAnswers;
+  });
 
   const handleSubmitQuestion = async () => {
     if (!newQuestion.trim()) return;
@@ -101,6 +117,35 @@ export default function AskTheGroup({ groupId }: AskTheGroupProps) {
         </div>
       </div>
 
+      {/* Search Bar */}
+      {questions.length > 0 && (
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search questions, answers, or names..."
+              className="input-field pl-10 pr-10 w-full"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          {searchQuery && (
+            <p className="text-xs text-muted-foreground mt-2">
+              {filteredQuestions.length} {filteredQuestions.length === 1 ? 'result' : 'results'} for "{searchQuery}"
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Questions List */}
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
@@ -111,9 +156,20 @@ export default function AskTheGroup({ groupId }: AskTheGroupProps) {
           <MessageSquarePlus className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
           <p className="text-muted-foreground">No questions yet. Be the first to ask!</p>
         </div>
+      ) : filteredQuestions.length === 0 ? (
+        <div className="text-center py-8 border border-dashed border-border rounded-lg">
+          <Search className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-muted-foreground">No questions match your search.</p>
+          <button
+            onClick={() => setSearchQuery('')}
+            className="text-primary text-sm hover:underline mt-2"
+          >
+            Clear search
+          </button>
+        </div>
       ) : (
         <div className="space-y-4">
-          {questions.map((question) => (
+          {filteredQuestions.map((question) => (
             <QuestionCard
               key={question.id}
               question={question}
