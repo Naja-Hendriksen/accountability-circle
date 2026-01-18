@@ -299,20 +299,20 @@ export default function Dashboard() {
             }))} placeholder="What challenges are you facing? Being honest helps the group support you." multiline />
               </section>
 
-              {/* Wins */}
+              {/* Wins & Reflections */}
               <section className="card-elevated p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 rounded-lg bg-terracotta-light">
                     <Trophy className="h-5 w-5 text-accent" />
                   </div>
-                  <h2 className="heading-section">Wins</h2>
+                  <h2 className="heading-section">Wins & Reflections</h2>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">Celebrate your progress, no matter how small! (It does not have to be a Mini-Move)</p>
+                <p className="text-sm text-muted-foreground mb-4">Celebrate your wins and reflect on what you've learned this week</p>
 
                 <EditableField value={formData.wins} isEditing={editingSection === 'wins'} onEdit={() => setEditingSection('wins')} onSave={() => saveWeeklyField('wins')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
               ...p,
               wins: v
-            }))} placeholder="What went well this week? What are you proud of?" multiline />
+            }))} placeholder="What went well? What insights or lessons emerged?" multiline />
               </section>
             </div>
 
