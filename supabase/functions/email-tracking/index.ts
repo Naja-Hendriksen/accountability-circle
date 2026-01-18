@@ -10,14 +10,92 @@ const TRACKING_PIXEL = new Uint8Array([
   0x01, 0x00, 0x3b
 ]);
 
+// HMAC-SHA256 signature verification using Web Crypto API
+async function verifyHmacSignature(
+  emailHistoryId: string, 
+  providedSignature: string, 
+  secret: string
+): Promise<boolean> {
+  try {
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(secret);
+    const messageData = encoder.encode(emailHistoryId);
+    
+    const key = await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    
+    const signatureBuffer = await crypto.subtle.sign("HMAC", key, messageData);
+    const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
+      .map(b => b.toString(16).padStart(2, "0"))
+      .join("");
+    
+    // Constant-time comparison to prevent timing attacks
+    if (expectedSignature.length !== providedSignature.length) {
+      return false;
+    }
+    
+    let result = 0;
+    for (let i = 0; i < expectedSignature.length; i++) {
+      result |= expectedSignature.charCodeAt(i) ^ providedSignature.charCodeAt(i);
+    }
+    
+    return result === 0;
+  } catch (error) {
+    console.error("HMAC verification error:", error);
+    return false;
+  }
+}
+
 const handler = async (req: Request): Promise<Response> => {
   const url = new URL(req.url);
   const pathParts = url.pathname.split("/");
   const action = pathParts[pathParts.length - 2]; // "open" or "click"
   const emailHistoryId = pathParts[pathParts.length - 1];
+  const providedSignature = url.searchParams.get("sig");
 
   if (!emailHistoryId) {
     return new Response("Missing email ID", { status: 400 });
+  }
+
+  // Verify HMAC signature to prevent tracking data pollution
+  const trackingSecret = Deno.env.get("EMAIL_TRACKING_SECRET");
+  if (!trackingSecret) {
+    console.error("EMAIL_TRACKING_SECRET not configured");
+    // Still return pixel to not break emails, but don't record
+    if (action === "open") {
+      return new Response(TRACKING_PIXEL, {
+        headers: { "Content-Type": "image/gif" },
+      });
+    }
+    return new Response("Server configuration error", { status: 500 });
+  }
+
+  if (!providedSignature) {
+    console.warn("Missing signature for email tracking request:", emailHistoryId);
+    // Return pixel but don't record - prevents breaking old emails
+    if (action === "open") {
+      return new Response(TRACKING_PIXEL, {
+        headers: { "Content-Type": "image/gif" },
+      });
+    }
+    return new Response("Missing signature", { status: 403 });
+  }
+
+  const isValidSignature = await verifyHmacSignature(emailHistoryId, providedSignature, trackingSecret);
+  if (!isValidSignature) {
+    console.warn("Invalid signature for email tracking request:", emailHistoryId);
+    // Return pixel but don't record
+    if (action === "open") {
+      return new Response(TRACKING_PIXEL, {
+        headers: { "Content-Type": "image/gif" },
+      });
+    }
+    return new Response("Invalid signature", { status: 403 });
   }
 
   const supabaseAdmin = createClient(
