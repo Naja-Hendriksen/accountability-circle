@@ -16,7 +16,8 @@ interface DeletionNotificationRequest {
   reason?: string;
 }
 
-const FACILITATOR_EMAIL = "najahendriksen@gmail.com";
+// Get facilitator email from environment variable, with fallback
+const FACILITATOR_EMAIL = Deno.env.get("FACILITATOR_EMAIL") || "najahendriksen@gmail.com";
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
