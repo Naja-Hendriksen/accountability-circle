@@ -53,7 +53,8 @@ const Apply = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Form state
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [location, setLocation] = useState("");
   const [availability, setAvailability] = useState("");
@@ -78,8 +79,12 @@ const Apply = () => {
     e.preventDefault();
     
     // Validation
-    if (!fullName.trim()) {
-      toast({ title: "Please enter your full name", variant: "destructive" });
+    if (!firstName.trim()) {
+      toast({ title: "Please enter your first name", variant: "destructive" });
+      return;
+    }
+    if (!lastName.trim()) {
+      toast({ title: "Please enter your last name", variant: "destructive" });
       return;
     }
     if (!email.trim()) {
@@ -144,7 +149,8 @@ const Apply = () => {
     
     try {
       const { error } = await supabase.from("applications").insert({
-        full_name: fullName,
+        first_name: firstName,
+        last_name: lastName,
         email,
         location,
         availability,
@@ -165,7 +171,8 @@ const Apply = () => {
       });
 
       // Reset form
-      setFullName("");
+      setFirstName("");
+      setLastName("");
       setEmail("");
       setLocation("");
       setAvailability("");
@@ -222,16 +229,29 @@ const Apply = () => {
 
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Full Name */}
+                {/* First Name */}
                 <div className="space-y-3">
-                  <Label htmlFor="fullName" className="text-base font-medium">
-                    Full Name <span className="text-destructive">*</span>
+                  <Label htmlFor="firstName" className="text-base font-medium">
+                    First Name <span className="text-destructive">*</span>
                   </Label>
                   <Input
-                    id="fullName"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Enter your full name"
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Enter your first name"
+                  />
+                </div>
+
+                {/* Last Name */}
+                <div className="space-y-3">
+                  <Label htmlFor="lastName" className="text-base font-medium">
+                    Last Name <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Enter your last name"
                   />
                 </div>
 

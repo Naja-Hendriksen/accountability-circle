@@ -49,7 +49,8 @@ type ApplicationStatus = "pending" | "approved" | "rejected" | "removed";
 
 interface Application {
   id: string;
-  full_name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   location: string;
   availability: string;
@@ -249,7 +250,7 @@ const AdminApplications = () => {
         });
         
         // Send email notification (fire and forget)
-        sendNotification(app.email, app.full_name, status, app.id);
+        sendNotification(app.email, app.first_name, status, app.id);
       }
     },
     onSuccess: (_, variables) => {
@@ -318,7 +319,8 @@ const AdminApplications = () => {
 
     const headers = [
       "Date",
-      "Name",
+      "First Name",
+      "Last Name",
       "Email",
       "Location",
       "Availability",
@@ -342,7 +344,8 @@ const AdminApplications = () => {
 
     const rows = filteredApps.map((app) => [
       format(new Date(app.created_at), "yyyy-MM-dd"),
-      escapeCSV(app.full_name),
+      escapeCSV(app.first_name),
+      escapeCSV(app.last_name),
       escapeCSV(app.email),
       escapeCSV(app.location),
       escapeCSV(getAvailabilityLabel(app.availability)),
@@ -573,7 +576,8 @@ const AdminApplications = () => {
                   if (!searchQuery.trim()) return true;
                   const query = searchQuery.toLowerCase();
                   return (
-                    app.full_name.toLowerCase().includes(query) ||
+                    app.first_name.toLowerCase().includes(query) ||
+                    app.last_name.toLowerCase().includes(query) ||
                     app.email.toLowerCase().includes(query)
                   );
                 });
@@ -680,13 +684,13 @@ const AdminApplications = () => {
                               onCheckedChange={(checked) => 
                                 handleSelectOne(checked as boolean, app.id)
                               }
-                              aria-label={`Select ${app.full_name}`}
+                              aria-label={`Select ${app.first_name} ${app.last_name}`}
                             />
                           </TableCell>
                           <TableCell className="whitespace-nowrap">
                             {format(new Date(app.created_at), "MMM d, yyyy")}
                           </TableCell>
-                          <TableCell className="font-medium">{app.full_name}</TableCell>
+                          <TableCell className="font-medium">{app.first_name} {app.last_name}</TableCell>
                           <TableCell>
                             <a 
                               href={`mailto:${app.email}`} 
@@ -730,10 +734,10 @@ const AdminApplications = () => {
                                       <div className="grid grid-cols-2 gap-4">
                                         <div>
                                           <p className="text-sm text-muted-foreground">
-                                            Full Name
+                                            Name
                                           </p>
                                           <p className="font-medium text-lg">
-                                            {selectedApplication.full_name}
+                                            {selectedApplication.first_name} {selectedApplication.last_name}
                                           </p>
                                         </div>
                                         <div>
@@ -868,7 +872,7 @@ const AdminApplications = () => {
                                                 status: "pending",
                                                 oldStatus: selectedApplication.status,
                                                 email: selectedApplication.email,
-                                                name: selectedApplication.full_name,
+                                                name: selectedApplication.first_name,
                                               });
                                               setSelectedApplication({
                                                 ...selectedApplication,
@@ -890,7 +894,7 @@ const AdminApplications = () => {
                                                   status: "approved",
                                                   oldStatus: selectedApplication.status,
                                                   email: selectedApplication.email,
-                                                  name: selectedApplication.full_name,
+                                                  name: selectedApplication.first_name,
                                                 });
                                                 setSelectedApplication({
                                                   ...selectedApplication,
@@ -914,7 +918,7 @@ const AdminApplications = () => {
                                                   status: "rejected",
                                                   oldStatus: selectedApplication.status,
                                                   email: selectedApplication.email,
-                                                  name: selectedApplication.full_name,
+                                                  name: selectedApplication.first_name,
                                                 });
                                                 setSelectedApplication({
                                                   ...selectedApplication,
@@ -938,7 +942,7 @@ const AdminApplications = () => {
                                                   status: "removed",
                                                   oldStatus: selectedApplication.status,
                                                   email: selectedApplication.email,
-                                                  name: selectedApplication.full_name,
+                                                  name: selectedApplication.first_name,
                                                 });
                                                 setSelectedApplication({
                                                   ...selectedApplication,
@@ -969,7 +973,7 @@ const AdminApplications = () => {
                                       status: "pending",
                                       oldStatus: app.status,
                                       email: app.email,
-                                      name: app.full_name,
+                                      name: app.first_name,
                                     })
                                   }
                                   disabled={updateStatusMutation.isPending}
@@ -991,7 +995,7 @@ const AdminApplications = () => {
                                             status: "approved",
                                             oldStatus: app.status,
                                             email: app.email,
-                                            name: app.full_name,
+                                            name: app.first_name,
                                           })
                                         }
                                         disabled={updateStatusMutation.isPending}
@@ -1008,7 +1012,7 @@ const AdminApplications = () => {
                                             status: "rejected",
                                             oldStatus: app.status,
                                             email: app.email,
-                                            name: app.full_name,
+                                            name: app.first_name,
                                           })
                                         }
                                         disabled={updateStatusMutation.isPending}
@@ -1027,7 +1031,7 @@ const AdminApplications = () => {
                                         status: "removed",
                                         oldStatus: app.status,
                                         email: app.email,
-                                        name: app.full_name,
+                                        name: app.first_name,
                                       })
                                     }
                                     disabled={updateStatusMutation.isPending}

@@ -74,10 +74,11 @@ export type Database = {
           digital_product: string
           email: string
           excitement: string
-          full_name: string
+          first_name: string
           gdpr_consent: boolean
           growth_goal: string
           id: string
+          last_name: string
           location: string
           status: string
           updated_at: string
@@ -91,10 +92,11 @@ export type Database = {
           digital_product: string
           email: string
           excitement: string
-          full_name: string
+          first_name?: string
           gdpr_consent?: boolean
           growth_goal: string
           id?: string
+          last_name?: string
           location: string
           status?: string
           updated_at?: string
@@ -108,10 +110,11 @@ export type Database = {
           digital_product?: string
           email?: string
           excitement?: string
-          full_name?: string
+          first_name?: string
           gdpr_consent?: boolean
           growth_goal?: string
           id?: string
+          last_name?: string
           location?: string
           status?: string
           updated_at?: string
