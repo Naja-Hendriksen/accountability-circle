@@ -2,7 +2,7 @@ import { ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
-import { LayoutDashboard, Users, LogOut, Menu, X, Shield, UsersRound } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut, Menu, X, Shield, UsersRound, Mail } from 'lucide-react';
 import logo from '@/assets/accountability-circle-logo.png';
 
 interface AppLayoutProps {
@@ -23,6 +23,7 @@ export default function AppLayout({
     ...(isAdmin ? [
       { name: 'Applications', href: '/admin/applications', icon: Shield },
       { name: 'Groups', href: '/admin/groups', icon: UsersRound },
+      { name: 'Email Templates', href: '/admin/email-templates', icon: Mail },
     ] : []),
   ];
   const isActive = (href: string) => location.pathname === href;
