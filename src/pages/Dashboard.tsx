@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth';
 import AppLayout from '@/components/layout/AppLayout';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { useCurrentWeekEntry, useUpdateWeeklyEntry, useMiniMoves, useAddMiniMove, useToggleMiniMove, useDeleteMiniMove } from '@/hooks/useWeeklyEntry';
-import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown, Mail } from 'lucide-react';
+import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown, Mail, Bell, BellOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import AvatarUpload from '@/components/AvatarUpload';
@@ -385,6 +385,31 @@ export default function Dashboard() {
                   {/* Divider */}
                   <div className="border-t border-border" />
 
+                  {/* Email Notifications */}
+                  <NotificationPreferences 
+                    enabled={profile?.email_notifications_enabled ?? true}
+                    onToggle={async (enabled) => {
+                      try {
+                        await updateProfile.mutateAsync({ email_notifications_enabled: enabled });
+                        toast({
+                          title: enabled ? "Notifications enabled" : "Notifications disabled",
+                          description: enabled 
+                            ? "You'll receive email notifications for new group questions." 
+                            : "You won't receive email notifications for new group questions."
+                        });
+                      } catch (error: any) {
+                        toast({
+                          title: "Error",
+                          description: error.message,
+                          variant: "destructive"
+                        });
+                      }
+                    }}
+                  />
+
+                  {/* Divider */}
+                  <div className="border-t border-border" />
+
                   {/* Request Account Deletion */}
                   <div>
                     <div className="flex items-center gap-2 mb-3">
@@ -532,6 +557,60 @@ function EmailChangeSection({
           <p className="text-sm">{currentEmail}</p>
         </div>}
     </div>;
+}
+
+// Notification Preferences Component
+interface NotificationPreferencesProps {
+  enabled: boolean;
+  onToggle: (enabled: boolean) => void;
+}
+function NotificationPreferences({ enabled, onToggle }: NotificationPreferencesProps) {
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleToggle = async () => {
+    setIsUpdating(true);
+    try {
+      await onToggle(!enabled);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <div className="p-1.5 rounded-lg bg-primary/10">
+          {enabled ? <Bell className="h-4 w-4 text-primary" /> : <BellOff className="h-4 w-4 text-muted-foreground" />}
+        </div>
+        <h3 className="font-medium text-sm">Email Notifications</h3>
+      </div>
+      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
+        <div>
+          <p className="text-sm font-medium">New group questions</p>
+          <p className="text-xs text-muted-foreground">
+            Get notified when someone posts a question in your group
+          </p>
+        </div>
+        <button
+          onClick={handleToggle}
+          disabled={isUpdating}
+          className={`
+            relative w-11 h-6 rounded-full transition-colors duration-200
+            ${enabled ? 'bg-primary' : 'bg-muted-foreground/30'}
+            ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+          `}
+        >
+          <span
+            className={`
+              absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm
+              transition-transform duration-200
+              ${enabled ? 'translate-x-5' : 'translate-x-0'}
+            `}
+          />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 // Request Deletion Dialog Component

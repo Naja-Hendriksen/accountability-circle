@@ -100,18 +100,39 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get emails for all group members
+    // Get profiles for all group members to check notification preferences
+    const memberUserIds = groupMembers.map(m => m.user_id);
+    const { data: memberProfiles, error: profilesError } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, name, email_notifications_enabled")
+      .in("user_id", memberUserIds);
+
+    if (profilesError) {
+      console.error("Error fetching member profiles:", profilesError);
+    }
+
+    // Filter to only members with notifications enabled
+    const profilesMap = new Map((memberProfiles || []).map(p => [p.user_id, p]));
+    const membersWithNotifications = groupMembers.filter(m => {
+      const profile = profilesMap.get(m.user_id);
+      // Default to true if profile not found or field is null
+      return profile?.email_notifications_enabled !== false;
+    });
+
+    if (membersWithNotifications.length === 0) {
+      console.log("No members with notifications enabled");
+      return new Response(
+        JSON.stringify({ message: "No members with notifications enabled" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Get emails for members with notifications enabled
     const memberEmails: { email: string; firstName: string }[] = [];
-    for (const member of groupMembers) {
+    for (const member of membersWithNotifications) {
       const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(member.user_id);
       if (!userError && user?.email) {
-        // Get profile for first name
-        const { data: profile } = await supabaseAdmin
-          .from("profiles")
-          .select("name")
-          .eq("user_id", member.user_id)
-          .single();
-        
+        const profile = profilesMap.get(member.user_id);
         const firstName = (profile?.name || "there").split(" ")[0];
         memberEmails.push({ email: user.email, firstName });
       }
