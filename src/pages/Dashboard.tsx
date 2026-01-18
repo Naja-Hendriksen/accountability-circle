@@ -351,7 +351,7 @@ export default function Dashboard() {
                       <div className="p-2 rounded-lg bg-primary/10">
                         <Edit3 className="h-5 w-5 text-primary" />
                       </div>
-                      <h3 className="font-semibold text-base">Your Profile</h3>
+                      <h3 className="font-semibold text-lg">Your Profile</h3>
                     </div>
 
                     <div className="flex items-start gap-6">
@@ -382,7 +382,7 @@ export default function Dashboard() {
                       <div className="p-2 rounded-lg bg-primary/10">
                         <Mail className="h-5 w-5 text-primary" />
                       </div>
-                      <h3 className="font-semibold text-base">Email Address</h3>
+                      <h3 className="font-semibold text-lg">Email Address</h3>
                     </div>
                     <EmailChangeSection currentEmail={user?.email || ''} />
                   </div>
@@ -393,7 +393,7 @@ export default function Dashboard() {
                       <div className="p-2 rounded-lg bg-primary/10">
                         <Bell className="h-5 w-5 text-primary" />
                       </div>
-                      <h3 className="font-semibold text-base">Email Notifications</h3>
+                      <h3 className="font-semibold text-lg">Email Notifications</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
                       Choose how you want to be notified about new group questions
@@ -429,7 +429,7 @@ export default function Dashboard() {
                       <div className="p-2 rounded-lg bg-destructive/10">
                         <Trash2 className="h-5 w-5 text-destructive" />
                       </div>
-                      <h3 className="font-semibold text-base text-destructive">Delete Account</h3>
+                      <h3 className="font-semibold text-lg text-destructive">Delete Account</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mb-5">
                       Request deletion of your account and all associated data. The facilitator will process your request.
