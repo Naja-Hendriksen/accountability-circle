@@ -2,6 +2,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 
+export interface GroupReaction {
+  id: string;
+  user_id: string;
+  question_id: string | null;
+  answer_id: string | null;
+  reaction_type: string;
+  created_at: string;
+}
+
 export interface GroupQuestion {
   id: string;
   group_id: string;
@@ -14,6 +23,9 @@ export interface GroupQuestion {
     avatar_url: string | null;
   };
   answers?: GroupAnswer[];
+  reactions?: GroupReaction[];
+  userHasLiked?: boolean;
+  likeCount?: number;
 }
 
 export interface GroupAnswer {
@@ -27,6 +39,9 @@ export interface GroupAnswer {
     name: string;
     avatar_url: string | null;
   };
+  reactions?: GroupReaction[];
+  userHasLiked?: boolean;
+  likeCount?: number;
 }
 
 export function useGroupQuestions(groupId: string | undefined) {
@@ -70,21 +85,47 @@ export function useGroupQuestions(groupId: string | undefined) {
         .select('user_id, name, avatar_url')
         .in('user_id', answerUserIds);
 
+      // Fetch all reactions for questions and answers
+      const answerIds = (answers || []).map(a => a.id);
+      const { data: questionReactions } = await supabase
+        .from('group_reactions')
+        .select('*')
+        .in('question_id', questionIds);
+
+      const { data: answerReactions } = answerIds.length > 0 
+        ? await supabase
+            .from('group_reactions')
+            .select('*')
+            .in('answer_id', answerIds)
+        : { data: [] };
+
       // Map profiles to questions and answers
       const profileMap = new Map(
         [...(questionProfiles || []), ...(answerProfiles || [])].map(p => [p.user_id, p])
       );
 
-      const questionsWithData: GroupQuestion[] = questions.map(q => ({
-        ...q,
-        profile: profileMap.get(q.user_id) || { name: 'Unknown', avatar_url: null },
-        answers: (answers || [])
-          .filter(a => a.question_id === q.id)
-          .map(a => ({
-            ...a,
-            profile: profileMap.get(a.user_id) || { name: 'Unknown', avatar_url: null }
-          }))
-      }));
+      const questionsWithData: GroupQuestion[] = questions.map(q => {
+        const qReactions = (questionReactions || []).filter(r => r.question_id === q.id);
+        return {
+          ...q,
+          profile: profileMap.get(q.user_id) || { name: 'Unknown', avatar_url: null },
+          reactions: qReactions,
+          likeCount: qReactions.length,
+          userHasLiked: qReactions.some(r => r.user_id === user?.id),
+          answers: (answers || [])
+            .filter(a => a.question_id === q.id)
+            .map(a => {
+              const aReactions = (answerReactions || []).filter(r => r.answer_id === a.id);
+              return {
+                ...a,
+                profile: profileMap.get(a.user_id) || { name: 'Unknown', avatar_url: null },
+                reactions: aReactions,
+                likeCount: aReactions.length,
+                userHasLiked: aReactions.some(r => r.user_id === user?.id)
+              };
+            })
+        };
+      });
 
       return questionsWithData;
     },
@@ -185,6 +226,58 @@ export function useDeleteAnswer() {
         .eq('id', answerId);
 
       if (error) throw error;
+    },
+    onSuccess: (_, { groupId }) => {
+      queryClient.invalidateQueries({ queryKey: ['group-questions', groupId] });
+    }
+  });
+}
+
+export function useToggleReaction() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({ 
+      questionId, 
+      answerId, 
+      groupId,
+      hasLiked 
+    }: { 
+      questionId?: string; 
+      answerId?: string; 
+      groupId: string;
+      hasLiked: boolean;
+    }) => {
+      if (!user) throw new Error('Not authenticated');
+
+      if (hasLiked) {
+        // Remove the reaction
+        const query = supabase
+          .from('group_reactions')
+          .delete()
+          .eq('user_id', user.id);
+        
+        if (questionId) {
+          const { error } = await query.eq('question_id', questionId);
+          if (error) throw error;
+        } else if (answerId) {
+          const { error } = await query.eq('answer_id', answerId);
+          if (error) throw error;
+        }
+      } else {
+        // Add reaction
+        const { error } = await supabase
+          .from('group_reactions')
+          .insert({
+            user_id: user.id,
+            question_id: questionId || null,
+            answer_id: answerId || null,
+            reaction_type: 'like'
+          });
+
+        if (error) throw error;
+      }
     },
     onSuccess: (_, { groupId }) => {
       queryClient.invalidateQueries({ queryKey: ['group-questions', groupId] });
