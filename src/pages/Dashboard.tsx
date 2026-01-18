@@ -335,27 +335,27 @@ export default function Dashboard() {
             </section>
 
             {/* Account Settings - Collapsible */}
-            <Collapsible defaultOpen={false} className="group/settings border-t border-border pt-6">
-              <CollapsibleTrigger className="w-full py-2 flex items-center justify-between text-muted-foreground hover:text-foreground transition-colors">
-                <div className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  <span className="text-sm font-medium">Account Settings</span>
+            <Collapsible defaultOpen={false} className="group/settings pt-8">
+              <CollapsibleTrigger className="w-full py-3 flex items-center justify-between text-muted-foreground hover:text-foreground transition-colors border-b border-border">
+                <div className="flex items-center gap-3">
+                  <Settings className="h-5 w-5" />
+                  <span className="text-base font-medium">Account Settings</span>
                 </div>
-                <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/settings:rotate-180" />
+                <ChevronDown className="h-5 w-5 transition-transform duration-200 group-data-[state=open]/settings:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="mt-4 p-4 rounded-lg bg-card border border-border space-y-6">
+                <div className="pt-8 space-y-10">
                   {/* Profile Section */}
-                  <div className="pt-2">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="p-1.5 rounded-lg bg-primary/10">
-                        <Edit3 className="h-4 w-4 text-primary" />
+                  <div>
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Edit3 className="h-5 w-5 text-primary" />
                       </div>
-                      <h3 className="font-medium text-sm">Your Profile</h3>
+                      <h3 className="font-semibold text-base">Your Profile</h3>
                     </div>
 
-                    <div className="flex items-start gap-4">
-                      <div className="flex flex-col items-center gap-1">
+                    <div className="flex items-start gap-6">
+                      <div className="flex flex-col items-center gap-2">
                         <AvatarUpload currentAvatarUrl={profile?.avatar_url || null} name={profile?.name || ''} onUploadComplete={async url => {
                       await updateProfile.mutateAsync({
                         avatar_url: url
@@ -365,7 +365,7 @@ export default function Dashboard() {
                         avatar_url: null
                       });
                     }} size="md" />
-                        <span className="text-xs text-muted-foreground">Click to change</span>
+                        <span className="text-sm text-muted-foreground">Click to change</span>
                       </div>
                       <div className="flex-1">
                         <EditableField label="Display Name" value={formData.name} isEditing={editingSection === 'name'} onEdit={() => setEditingSection('name')} onSave={() => saveProfileField('name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
@@ -376,52 +376,62 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  {/* Divider */}
-                  <div className="border-t border-border" />
-
                   {/* Email Section */}
-                  <EmailChangeSection currentEmail={user?.email || ''} />
-
-                  {/* Divider */}
-                  <div className="border-t border-border" />
+                  <div>
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Mail className="h-5 w-5 text-primary" />
+                      </div>
+                      <h3 className="font-semibold text-base">Email Address</h3>
+                    </div>
+                    <EmailChangeSection currentEmail={user?.email || ''} />
+                  </div>
 
                   {/* Email Notifications */}
-                  <NotificationPreferencesSection 
-                    preference={profile?.notification_preference ?? 'instant'}
-                    onUpdate={async (preference) => {
-                      try {
-                        await updateProfile.mutateAsync({ notification_preference: preference });
-                        const messages = {
-                          instant: "You'll receive instant email notifications for new group questions.",
-                          digest: "You'll receive a weekly digest of new group questions every Monday.",
-                          off: "You won't receive email notifications for new group questions."
-                        };
-                        toast({
-                          title: "Preferences updated",
-                          description: messages[preference]
-                        });
-                      } catch (error: any) {
-                        toast({
-                          title: "Error",
-                          description: error.message,
-                          variant: "destructive"
-                        });
-                      }
-                    }}
-                  />
-
-                  {/* Divider */}
-                  <div className="border-t border-border" />
-
-                  {/* Request Account Deletion */}
                   <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="p-1.5 rounded-lg bg-destructive/10">
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Bell className="h-5 w-5 text-primary" />
                       </div>
-                      <h3 className="font-medium text-sm text-destructive">Delete Account</h3>
+                      <h3 className="font-semibold text-base">Email Notifications</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
+                      Choose how you want to be notified about new group questions
+                    </p>
+                    <NotificationPreferencesSection 
+                      preference={profile?.notification_preference ?? 'instant'}
+                      onUpdate={async (preference) => {
+                        try {
+                          await updateProfile.mutateAsync({ notification_preference: preference });
+                          const messages = {
+                            instant: "You'll receive instant email notifications for new group questions.",
+                            digest: "You'll receive a weekly digest of new group questions every Monday.",
+                            off: "You won't receive email notifications for new group questions."
+                          };
+                          toast({
+                            title: "Preferences updated",
+                            description: messages[preference]
+                          });
+                        } catch (error: any) {
+                          toast({
+                            title: "Error",
+                            description: error.message,
+                            variant: "destructive"
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {/* Request Account Deletion */}
+                  <div className="pt-4 border-t border-border">
+                    <div className="flex items-center gap-3 mb-5">
+                      <div className="p-2 rounded-lg bg-destructive/10">
+                        <Trash2 className="h-5 w-5 text-destructive" />
+                      </div>
+                      <h3 className="font-semibold text-base text-destructive">Delete Account</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-5">
                       Request deletion of your account and all associated data. The facilitator will process your request.
                     </p>
                     <RequestDeletionDialog userId={user?.id || ''} userEmail={user?.email || ''} userName={profile?.name || ''} />
@@ -525,39 +535,33 @@ function EmailChangeSection({
     }
   };
   return <div>
-      <div className="flex items-center gap-2 mb-3">
-        <div className="p-1.5 rounded-lg bg-primary/10">
-          <Mail className="h-4 w-4 text-primary" />
-        </div>
-        <h3 className="font-medium text-sm">Email Address</h3>
-      </div>
-
-      {isEditing ? <div className="space-y-3">
+      {isEditing ? <div className="space-y-4">
           <div>
-            <label className="label-text text-sm">Current email</label>
-            <p className="text-sm text-muted-foreground">{currentEmail}</p>
+            <label className="label-text">Current email</label>
+            <p className="text-muted-foreground">{currentEmail}</p>
           </div>
           <div>
-            <label className="label-text text-sm">New email</label>
-            <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="Enter new email address" className="input-field text-sm" autoFocus />
+            <label className="label-text">New email</label>
+            <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="Enter new email address" className="input-field" autoFocus />
           </div>
-          <div className="flex gap-2">
-            <button onClick={handleUpdateEmail} disabled={isSubmitting || !newEmail.trim()} className="btn-primary flex items-center gap-2 text-sm py-1.5 px-3">
+          <div className="flex gap-3">
+            <button onClick={handleUpdateEmail} disabled={isSubmitting || !newEmail.trim()} className="btn-primary flex items-center gap-2">
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Update Email
             </button>
             <button onClick={() => {
           setIsEditing(false);
           setNewEmail('');
-        }} className="btn-secondary text-sm py-1.5 px-3">
+        }} className="btn-secondary">
               Cancel
             </button>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             A confirmation link will be sent to your new email address.
           </p>
-        </div> : <div onClick={() => setIsEditing(true)} className="p-2.5 rounded-lg border border-transparent bg-muted/30 hover:bg-muted/50 hover:border-border cursor-pointer transition-all duration-200">
-          <p className="text-sm">{currentEmail}</p>
+        </div> : <div onClick={() => setIsEditing(true)} className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 cursor-pointer transition-all duration-200">
+          <p className="text-base">{currentEmail}</p>
+          <p className="text-sm text-muted-foreground mt-1">Click to change your email address</p>
         </div>}
     </div>;
 }
@@ -587,13 +591,13 @@ function NotificationPreferencesSection({ preference, onUpdate }: NotificationPr
     {
       value: 'instant',
       label: 'Instant',
-      description: 'Get notified immediately',
+      description: 'Get notified immediately when someone posts',
       icon: Bell
     },
     {
       value: 'digest',
       label: 'Weekly Digest',
-      description: 'Summary every Monday',
+      description: 'Receive a summary every Monday at 9am',
       icon: Mail
     },
     {
@@ -605,41 +609,30 @@ function NotificationPreferencesSection({ preference, onUpdate }: NotificationPr
   ];
 
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-3">
-        <div className="p-1.5 rounded-lg bg-primary/10">
-          <Bell className="h-4 w-4 text-primary" />
-        </div>
-        <h3 className="font-medium text-sm">Email Notifications</h3>
-      </div>
-      <p className="text-xs text-muted-foreground mb-3">
-        Choose how you want to be notified about new group questions
-      </p>
-      <div className="grid grid-cols-3 gap-2">
-        {options.map((option) => {
-          const Icon = option.icon;
-          const isSelected = preference === option.value;
-          return (
-            <button
-              key={option.value}
-              onClick={() => handleUpdate(option.value)}
-              disabled={isUpdating}
-              className={`
-                p-3 rounded-lg border text-left transition-all duration-200
-                ${isSelected 
-                  ? 'border-primary bg-primary/5 ring-1 ring-primary' 
-                  : 'border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50'
-                }
-                ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-              `}
-            >
-              <Icon className={`h-4 w-4 mb-2 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
-              <p className={`text-sm font-medium ${isSelected ? 'text-primary' : ''}`}>{option.label}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{option.description}</p>
-            </button>
-          );
-        })}
-      </div>
+    <div className="grid sm:grid-cols-3 gap-3">
+      {options.map((option) => {
+        const Icon = option.icon;
+        const isSelected = preference === option.value;
+        return (
+          <button
+            key={option.value}
+            onClick={() => handleUpdate(option.value)}
+            disabled={isUpdating}
+            className={`
+              p-4 rounded-lg text-left transition-all duration-200
+              ${isSelected 
+                ? 'bg-primary/10 ring-2 ring-primary' 
+                : 'bg-muted/30 hover:bg-muted/50'
+              }
+              ${isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+            `}
+          >
+            <Icon className={`h-5 w-5 mb-3 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+            <p className={`font-medium ${isSelected ? 'text-primary' : ''}`}>{option.label}</p>
+            <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
+          </button>
+        );
+      })}
     </div>
   );
 }
