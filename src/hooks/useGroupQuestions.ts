@@ -124,7 +124,7 @@ export function useAddAnswer() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ questionId, content, groupId }: { questionId: string; content: string; groupId: string }) => {
+    mutationFn: async ({ questionId, content, groupId, replierName }: { questionId: string; content: string; groupId: string; replierName: string }) => {
       if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
@@ -138,6 +138,16 @@ export function useAddAnswer() {
         .single();
 
       if (error) throw error;
+
+      // Send notification to question author (fire and forget)
+      supabase.functions.invoke('notify-question-reply', {
+        body: {
+          questionId,
+          answerId: data.id,
+          replierName
+        }
+      }).catch(err => console.error('Failed to send reply notification:', err));
+
       return data;
     },
     onSuccess: (_, { groupId }) => {
