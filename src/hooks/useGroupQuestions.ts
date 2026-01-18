@@ -138,7 +138,7 @@ export function useAddQuestion() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ groupId, content }: { groupId: string; content: string }) => {
+    mutationFn: async ({ groupId, content, authorName }: { groupId: string; content: string; authorName: string }) => {
       if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
@@ -152,6 +152,16 @@ export function useAddQuestion() {
         .single();
 
       if (error) throw error;
+
+      // Send notification to group members (fire and forget)
+      supabase.functions.invoke('notify-new-question', {
+        body: {
+          questionId: data.id,
+          groupId,
+          authorName
+        }
+      }).catch(err => console.error('Failed to send new question notification:', err));
+
       return data;
     },
     onSuccess: (_, { groupId }) => {
