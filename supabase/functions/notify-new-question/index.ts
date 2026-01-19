@@ -221,7 +221,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       try {
         await resend.emails.send({
-          from: "Accountability Circle <onboarding@resend.dev>",
+          from: "Accountability Circle <team@accountabilitycircle.co.uk>",
           to: [email],
           subject: `${authorName} asked a question in your group`,
           html: emailHtml,

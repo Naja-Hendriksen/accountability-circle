@@ -170,13 +170,13 @@ const handler = async (req: Request): Promise<Response> => {
     // Send both emails in parallel
     const [adminResult, applicantResult] = await Promise.allSettled([
       resend.emails.send({
-        from: "Accountability Circle <onboarding@resend.dev>",
+        from: "Accountability Circle <team@accountabilitycircle.co.uk>",
         to: [facilitatorEmail],
         subject: `New Application: ${fullName}`,
         html: adminEmailHtml,
       }),
       resend.emails.send({
-        from: "Accountability Circle <onboarding@resend.dev>",
+        from: "Accountability Circle <team@accountabilitycircle.co.uk>",
         to: [applicationData.email],
         subject: applicantEmailContent.subject,
         html: applicantEmailContent.html,
