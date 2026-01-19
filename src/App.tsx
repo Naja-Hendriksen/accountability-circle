@@ -15,6 +15,7 @@ import Guidelines from "./pages/Guidelines";
 import AdminApplications from "./pages/AdminApplications";
 import AdminGroups from "./pages/AdminGroups";
 import EmailTemplates from "./pages/EmailTemplates";
+import Information from "./pages/Information";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/group" element={<GroupView />} />
+            <Route path="/information" element={<Information />} />
             <Route path="/apply" element={<Apply />} />
             <Route path="/application-submitted" element={<ApplicationSubmitted />} />
             <Route path="/privacy" element={<Privacy />} />
