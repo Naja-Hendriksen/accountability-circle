@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth';
 import AppLayout from '@/components/layout/AppLayout';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
-import { useCurrentWeekEntry, useUpdateWeeklyEntry, useMiniMoves, useAddMiniMove, useToggleMiniMove, useDeleteMiniMove } from '@/hooks/useWeeklyEntry';
-import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown, Mail, Bell, BellOff } from 'lucide-react';
+import { useCurrentWeekEntry, useUpdateWeeklyEntry, useMiniMoves, useAddMiniMove, useToggleMiniMove, useDeleteMiniMove, useAllWeeklyEntries, usePreviousWeekEntry, isWeekEditable, WeeklyEntry, MiniMove } from '@/hooks/useWeeklyEntry';
+import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown, Mail, Bell, BellOff, History, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import AvatarUpload from '@/components/AvatarUpload';
@@ -29,10 +29,19 @@ export default function Dashboard() {
     data: weeklyEntry,
     isLoading: weeklyLoading
   } = useCurrentWeekEntry();
+  const {
+    data: previousWeekEntry
+  } = usePreviousWeekEntry();
+  const {
+    data: allHistoricalEntries = []
+  } = useAllWeeklyEntries();
   const updateWeeklyEntry = useUpdateWeeklyEntry();
   const {
     data: miniMoves = []
   } = useMiniMoves(weeklyEntry?.id);
+  const {
+    data: previousWeekMiniMoves = []
+  } = useMiniMoves(previousWeekEntry?.id);
   const addMiniMove = useAddMiniMove();
   const toggleMiniMove = useToggleMiniMove();
   const deleteMiniMove = useDeleteMiniMove();
@@ -135,13 +144,14 @@ export default function Dashboard() {
       });
     }
   };
-  const handleToggleMove = async (id: string, completed: boolean) => {
-    if (!weeklyEntry) return;
+  const handleToggleMove = async (id: string, completed: boolean, entryId?: string) => {
+    const targetEntryId = entryId || weeklyEntry?.id;
+    if (!targetEntryId) return;
     try {
       await toggleMiniMove.mutateAsync({
         id,
         completed: !completed,
-        weeklyEntryId: weeklyEntry.id
+        weeklyEntryId: targetEntryId
       });
     } catch (error: any) {
       toast({
@@ -151,12 +161,13 @@ export default function Dashboard() {
       });
     }
   };
-  const handleDeleteMove = async (id: string) => {
-    if (!weeklyEntry) return;
+  const handleDeleteMove = async (id: string, entryId?: string) => {
+    const targetEntryId = entryId || weeklyEntry?.id;
+    if (!targetEntryId) return;
     try {
       await deleteMiniMove.mutateAsync({
         id,
-        weeklyEntryId: weeklyEntry.id
+        weeklyEntryId: targetEntryId
       });
     } catch (error: any) {
       toast({
@@ -279,6 +290,66 @@ export default function Dashboard() {
                   Add
                 </button>
               </div>
+
+              {/* Last Week's Mini-Moves (Editable) */}
+              {previousWeekEntry && previousWeekMiniMoves.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-border">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      Last Week ({format(new Date(previousWeekEntry.week_start), 'MMM d')})
+                    </h3>
+                  </div>
+                  <div className="space-y-2">
+                    {previousWeekMiniMoves.map(move => (
+                      <div key={move.id} className={`
+                        flex items-center gap-3 p-2.5 rounded-lg border transition-all duration-200
+                        ${move.completed ? 'bg-sage-light/20 border-primary/10' : 'bg-muted/30 border-border'}
+                      `}>
+                        <button 
+                          onClick={() => handleToggleMove(move.id, move.completed, previousWeekEntry.id)} 
+                          className={`
+                            flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center
+                            transition-all duration-200
+                            ${move.completed ? 'bg-primary border-primary' : 'border-muted-foreground/40 hover:border-primary'}
+                          `}
+                        >
+                          {move.completed && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
+                        </button>
+                        <span className={`flex-1 text-sm ${move.completed ? 'line-through text-muted-foreground' : ''}`}>
+                          {move.title}
+                        </span>
+                        <button 
+                          onClick={() => handleDeleteMove(move.id, previousWeekEntry.id)} 
+                          className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Historical Mini-Moves (View Only) */}
+              {allHistoricalEntries.length > 0 && (
+                <Collapsible className="mt-6">
+                  <CollapsibleTrigger className="w-full py-3 flex items-center justify-between text-muted-foreground hover:text-foreground transition-colors">
+                    <div className="flex items-center gap-2">
+                      <History className="h-4 w-4" />
+                      <span className="text-sm font-medium">View Past Weeks</span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-4 space-y-4">
+                    {allHistoricalEntries
+                      .filter(entry => !isWeekEditable(entry.week_start))
+                      .map(entry => (
+                        <HistoricalWeekMoves key={entry.id} entry={entry} />
+                      ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
             </section>
 
             {/* Obstacles & Wins - Two Column Layout */}
@@ -490,6 +561,56 @@ function EditableField({
         {value ? <p className={`whitespace-pre-wrap ${compact ? 'text-sm' : 'text-body'}`}>{value}</p> : <p className={`text-muted-foreground italic ${compact ? 'text-sm' : ''}`}>{placeholder || 'Click to edit...'}</p>}
       </div>
     </div>;
+}
+
+// Historical Week Mini-Moves Component (View Only)
+interface HistoricalWeekMovesProps {
+  entry: WeeklyEntry;
+}
+function HistoricalWeekMoves({ entry }: HistoricalWeekMovesProps) {
+  const { data: moves = [] } = useMiniMoves(entry.id);
+  
+  if (moves.length === 0) return null;
+  
+  const completedCount = moves.filter(m => m.completed).length;
+  const weekDate = new Date(entry.week_start);
+  
+  return (
+    <div className="p-4 rounded-lg bg-muted/20 border border-border/50">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Eye className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">
+            Week of {format(weekDate, 'MMM d, yyyy')}
+          </span>
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {completedCount}/{moves.length} completed
+        </span>
+      </div>
+      <div className="space-y-1.5">
+        {moves.map((move: MiniMove) => (
+          <div 
+            key={move.id} 
+            className={`
+              flex items-center gap-2 p-2 rounded text-sm
+              ${move.completed ? 'text-muted-foreground' : 'text-foreground'}
+            `}
+          >
+            <div className={`
+              flex-shrink-0 w-4 h-4 rounded-full border flex items-center justify-center
+              ${move.completed ? 'bg-primary/20 border-primary/30' : 'border-muted-foreground/30'}
+            `}>
+              {move.completed && <Check className="h-2.5 w-2.5 text-primary" />}
+            </div>
+            <span className={move.completed ? 'line-through' : ''}>
+              {move.title}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // Email Change Section Component
