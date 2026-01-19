@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Video, LayoutDashboard, Users, FileDown, Upload, Trash2, FileText, Clock, Calendar } from "lucide-react";
+import { Video, LayoutDashboard, Users, FileDown, Upload, Trash2, FileText, Clock, Calendar, ClipboardCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useRef } from "react";
 
@@ -179,37 +179,67 @@ export default function Information() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-4 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>Every Monday</span>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Left Column - Call Details */}
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    <span>Every Monday</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Clock className="h-4 w-4" />
+                    <span>10:00 AM (UK Time)</span>
+                  </div>
+                </div>
+                
+                <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                  <p><span className="font-medium">Meeting ID:</span> 891 9614 3956</p>
+                  <p><span className="font-medium">Passcode:</span> 478939</p>
+                </div>
+                
+                <Button 
+                  asChild 
+                  size="lg" 
+                  className="w-full sm:w-auto"
+                >
+                  <a 
+                    href="https://us06web.zoom.us/j/89196143956?pwd=bsuVc9l15ExlF0lESkK7y1H6vXarts.1" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <Video className="h-4 w-4 mr-2" />
+                    Join Zoom Call
+                  </a>
+                </Button>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>10:00 AM (UK Time)</span>
+
+              {/* Right Column - Preparation */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <ClipboardCheck className="h-5 w-5 text-primary" />
+                  <h4 className="font-medium text-foreground">Before You Join</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  To make the most of our time together, please prepare before each call:
+                </p>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary font-medium">1.</span>
+                    <span>Review and update your mini-moves from last week — mark what you completed and reflect on any blockers.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary font-medium">2.</span>
+                    <span>Set your new mini-moves for this week — 3-5 focused actions that move you towards your monthly milestone.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-primary font-medium">3.</span>
+                    <span>Note any wins to celebrate and obstacles where you'd like group support.</span>
+                  </li>
+                </ul>
               </div>
             </div>
-            
-            <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-              <p><span className="font-medium">Meeting ID:</span> 891 9614 3956</p>
-              <p><span className="font-medium">Passcode:</span> 478939</p>
-            </div>
-            
-            <Button 
-              asChild 
-              size="lg" 
-              className="w-full sm:w-auto"
-            >
-              <a 
-                href="https://us06web.zoom.us/j/89196143956?pwd=bsuVc9l15ExlF0lESkK7y1H6vXarts.1" 
-                target="_blank" 
-                rel="noopener noreferrer"
-              >
-                <Video className="h-4 w-4 mr-2" />
-                Join Zoom Call
-              </a>
-            </Button>
           </CardContent>
         </Card>
 
