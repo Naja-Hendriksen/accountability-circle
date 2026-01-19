@@ -166,82 +166,86 @@ export default function Information() {
           </p>
         </div>
 
-        {/* Zoom Call CTA */}
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-primary/10">
-                <Video className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">Weekly Accountability Call</CardTitle>
-                <CardDescription>Join us every week to check in and stay on track</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Left Column - Call Details */}
-              <div className="space-y-4">
-                <div className="flex flex-wrap gap-4 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>Every Monday</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>10:00 AM (UK Time)</span>
-                  </div>
+        {/* Zoom Call Cards */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Weekly Accountability Call */}
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-full bg-primary/10">
+                  <Video className="h-6 w-6 text-primary" />
                 </div>
-                
-                <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                  <p><span className="font-medium">Meeting ID:</span> 891 9614 3956</p>
-                  <p><span className="font-medium">Passcode:</span> 478939</p>
+                <div>
+                  <CardTitle className="text-xl">Weekly Accountability Call</CardTitle>
+                  <CardDescription>Join us every week to check in and stay on track</CardDescription>
                 </div>
-                
-                <Button 
-                  asChild 
-                  size="lg" 
-                  className="w-full sm:w-auto"
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>Every Monday</span>
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>10:00 AM (UK Time)</span>
+                </div>
+              </div>
+              
+              <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                <p><span className="font-medium">Meeting ID:</span> 891 9614 3956</p>
+                <p><span className="font-medium">Passcode:</span> 478939</p>
+              </div>
+              
+              <Button 
+                asChild 
+                size="lg" 
+                className="w-full"
+              >
+                <a 
+                  href="https://us06web.zoom.us/j/89196143956?pwd=bsuVc9l15ExlF0lESkK7y1H6vXarts.1" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
                 >
-                  <a 
-                    href="https://us06web.zoom.us/j/89196143956?pwd=bsuVc9l15ExlF0lESkK7y1H6vXarts.1" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                  >
-                    <Video className="h-4 w-4 mr-2" />
-                    Join Zoom Call
-                  </a>
-                </Button>
-              </div>
+                  <Video className="h-4 w-4 mr-2" />
+                  Join Zoom Call
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
 
-              {/* Right Column - Preparation */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <ClipboardCheck className="h-5 w-5 text-primary" />
-                  <h4 className="font-medium text-foreground">Before You Join</h4>
+          {/* Before You Join */}
+          <Card className="border-primary/20 bg-gradient-to-br from-accent/5 to-primary/5">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-full bg-primary/10">
+                  <ClipboardCheck className="h-6 w-6 text-primary" />
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  To make the most of our time together, please prepare before each call:
-                </p>
-                <ul className="text-sm text-muted-foreground space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary font-medium">1.</span>
-                    <span>Review and update your mini-moves from last week — mark what you completed and reflect on any blockers.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary font-medium">2.</span>
-                    <span>Set your new mini-moves for this week — 3-5 focused actions that move you towards your monthly milestone.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-primary font-medium">3.</span>
-                    <span>Note any wins to celebrate and obstacles where you'd like group support.</span>
-                  </li>
-                </ul>
+                <div>
+                  <CardTitle className="text-xl">Before You Join</CardTitle>
+                  <CardDescription>Prepare to make the most of our time together</CardDescription>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="text-sm text-muted-foreground space-y-3">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary font-medium">1.</span>
+                  <span>Review and update your mini-moves from last week — mark what you completed and reflect on any blockers.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary font-medium">2.</span>
+                  <span>Set your new mini-moves for this week — 3-5 focused actions that move you towards your monthly milestone.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary font-medium">3.</span>
+                  <span>Note any wins to celebrate and obstacles where you'd like group support.</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* How My Dashboard Works */}
         <Card>
