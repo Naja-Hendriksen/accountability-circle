@@ -90,6 +90,40 @@ export function usePreviousWeekEntry() {
   });
 }
 
+// Get all historical weekly entries (excluding current week)
+export function useAllWeeklyEntries() {
+  const { user } = useAuth();
+  const currentWeekStart = getWeekStart();
+
+  return useQuery({
+    queryKey: ['allWeeklyEntries', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('weekly_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .lt('week_start', currentWeekStart)
+        .order('week_start', { ascending: false });
+
+      if (error) throw error;
+      return data as WeeklyEntry[];
+    },
+    enabled: !!user,
+  });
+}
+
+// Helper to check if a week is editable (current week or last week)
+export function isWeekEditable(weekStart: string): boolean {
+  const currentWeekStart = getWeekStart();
+  const lastWeek = new Date();
+  lastWeek.setDate(lastWeek.getDate() - 7);
+  const lastWeekStart = getWeekStart(lastWeek);
+  
+  return weekStart === currentWeekStart || weekStart === lastWeekStart;
+}
+
 export function useUpdateWeeklyEntry() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
