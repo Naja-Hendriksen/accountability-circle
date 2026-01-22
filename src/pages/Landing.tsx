@@ -4,8 +4,10 @@ import { Check, X, Users, Target, Heart, Calendar, Sparkles } from "lucide-react
 import { Link } from "react-router-dom";
 import najaPhoto from "@/assets/naja-facilitator.jpg";
 import logoImage from "@/assets/accountability-circle-logo.png";
+
 const Landing = () => {
-  return <div className="min-h-screen bg-background">
+  return (
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
@@ -65,57 +67,56 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Who This Circle Is For */}
+      {/* You're Invited (formerly Meet Your Facilitator) */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-display font-light text-center mb-16">
-              Who This Circle Is For
+            <h2 className="text-3xl md:text-4xl font-display font-light text-center mb-12">
+              You're Invited
             </h2>
             
-            <div className="grid md:grid-cols-2 gap-8 mb-16">
-              {/* For */}
-              <Card className="border-primary/20 bg-card/50">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Check className="w-5 h-5 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-display font-medium text-primary">Perfect for...</h3>
+            <Card className="border-primary/20 bg-card/50">
+              <CardContent className="p-8 md:p-12">
+                <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+                  <div className="shrink-0">
+                    <img src={najaPhoto} alt="Naja Hendriksen" className="w-48 h-48 md:w-56 md:h-56 rounded-full object-cover border-4 border-primary/20 shadow-lg" />
                   </div>
-                  <ul className="space-y-4">
-                    {["Women who have their own business or developing their first business", "Women who want to add a digital product or assets as part of growing their business", "Women who are motivated and willing to put consistent effort into reaching their goals", "Women excited by community and peer support", "Women who want accountability without pressure", "Women who are energised by showing up for one another each week", "Women who want to make the most of 2026 and are ready to show up for themselves, their business and each other"].map((item, index) => <li key={index} className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                        <span className="text-foreground/80">{item}</span>
-                      </li>)}
-                  </ul>
-                </CardContent>
-              </Card>
+                  <div className="text-center md:text-left">
+                    <p className="text-lg text-foreground/80 leading-relaxed">
+                      Hi, I'm Naja! I'm building a digital business while juggling life as a single mum of two. I'm inviting a small group of women to meet weekly to share wins, talk through challenges, explore ideas and celebrate progress together. Welcome to this space to stay accountable, be heard, and feel inspired.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
 
-              {/* Not For */}
-              <Card className="border-accent/20 bg-card/50">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
-                      <X className="w-5 h-5 text-accent" />
-                    </div>
-                    <h3 className="text-xl font-display font-medium text-accent">Not the right fit for...</h3>
-                  </div>
-                  <ul className="space-y-4">
-                    {["Complete beginners without a defined idea or business to work on", "Women looking for step-by-step tutorials, full course or 1:1 tech setup or mentoring", "Women who currently don't have the capacity to commit to regular attendance and mutual accountability"].map((item, index) => <li key={index} className="flex items-start gap-3">
-                        <X className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-                        <span className="text-foreground/80">{item}</span>
-                      </li>)}
-                  </ul>
-                </CardContent>
-              </Card>
+      {/* Ready to Make 2026 Your Year */}
+      <section className="py-20">
+        <div className="container mx-auto px-6">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-display font-light mb-6">
+              Ready to Make 2026 Your Year?
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              Join a circle of ambitious, supportive women who are committed to growing together.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="text-lg px-8 py-6 h-auto" asChild>
+                <Link to="/apply">Apply to Join the Circle</Link>
+              </Button>
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6 h-auto" asChild>
+                <Link to="/auth">Already a Member? Sign In</Link>
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
       {/* What to Expect */}
-      <section className="py-20">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-display font-light text-center mb-6">
@@ -126,23 +127,29 @@ const Landing = () => {
             </p>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[{
-              icon: Calendar,
-              title: "Weekly Zoom Calls",
-              description: "Join our live weekly session to connect, share and plan together"
-            }, {
-              icon: Target,
-              title: "Goal Setting",
-              description: "Set focused weekly mini-moves that align with your bigger vision"
-            }, {
-              icon: Users,
-              title: "Peer Support",
-              description: "Share your wins, challenges and receive encouragement from the group"
-            }, {
-              icon: Heart,
-              title: "Accountability",
-              description: "Gentle, consistent accountability that keeps you on track"
-            }].map((item, index) => <Card key={index} className="border-primary/10 bg-gradient-to-b from-card to-muted/20">
+              {[
+                {
+                  icon: Calendar,
+                  title: "Weekly Zoom Calls",
+                  description: "Join our live weekly session to connect, share and plan together"
+                },
+                {
+                  icon: Target,
+                  title: "Goal Setting",
+                  description: "Set focused weekly mini-moves that align with your bigger vision"
+                },
+                {
+                  icon: Users,
+                  title: "Peer Support",
+                  description: "Share your wins, challenges and receive encouragement from the group"
+                },
+                {
+                  icon: Heart,
+                  title: "Accountability",
+                  description: "Gentle, consistent accountability that keeps you on track"
+                }
+              ].map((item, index) => (
+                <Card key={index} className="border-primary/10 bg-gradient-to-b from-card to-muted/20">
                   <CardContent className="p-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                       <item.icon className="w-6 h-6 text-primary" />
@@ -150,7 +157,8 @@ const Landing = () => {
                     <h3 className="font-display font-medium mb-2">{item.title}</h3>
                     <p className="text-sm text-muted-foreground">{item.description}</p>
                   </CardContent>
-                </Card>)}
+                </Card>
+              ))}
             </div>
 
             <Card className="mt-12 border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5">
@@ -173,34 +181,8 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Meet Your Facilitator */}
+      {/* Investment */}
       <section className="py-20">
-        <div className="container mx-auto px-6">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-display font-light text-center mb-12">
-              Meet Your Facilitator
-            </h2>
-            
-            <Card className="border-primary/20 bg-card/50">
-              <CardContent className="p-8 md:p-12">
-                <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
-                  <div className="shrink-0">
-                    <img src={najaPhoto} alt="Naja Hendriksen" className="w-48 h-48 md:w-56 md:h-56 rounded-full object-cover border-4 border-primary/20 shadow-lg" />
-                  </div>
-                  <div className="text-center md:text-left">
-                    <p className="text-lg text-foreground/80 leading-relaxed">Hi, I'm Naja! I'm a mum of two, building my own fully digital business while juggling life and family. I've been creating online courses, video lessons, digital downloads, newsletters, websites and other digital assets, so I know what it's like to try to figure it all out on the go.</p>
-                    <p className="text-lg text-foreground/80 leading-relaxed mt-4">I am looking for a small, curated group of women who are ready to support each other, stay accountable and grow their business together. I'll of course share what I've learned along the way, as well as be here to run our mutually supportive Accountability Circle, meeting once a week.</p>
-                    <p className="text-lg text-primary font-medium mt-4">I just know we can do more when we share the journey.</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing */}
-      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-6">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-display font-light mb-6">
@@ -228,10 +210,18 @@ const Landing = () => {
                   Paid as a subscription • Cancel anytime after your commitment
                 </p>
                 <ul className="text-left space-y-3 mb-8 max-w-sm mx-auto">
-                  {["Weekly live group Zoom calls", "Private member dashboard", "Shared accountability view", "Small group of 6 women maximum", "Supportive community"].map((item, index) => <li key={index} className="flex items-center gap-3">
+                  {[
+                    "Weekly live group Zoom calls",
+                    "Private member dashboard",
+                    "Shared accountability view",
+                    "Small group of 6 women maximum",
+                    "Supportive community"
+                  ].map((item, index) => (
+                    <li key={index} className="flex items-center gap-3">
                       <Check className="w-4 h-4 text-primary shrink-0" />
                       <span className="text-foreground/80 text-sm">{item}</span>
-                    </li>)}
+                    </li>
+                  ))}
                 </ul>
                 <Button size="lg" className="w-full text-lg py-6 h-auto" asChild>
                   <Link to="/apply">Apply to Join</Link>
@@ -246,23 +236,66 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-20">
+      {/* Who This Circle Is For */}
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-6">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-display font-light mb-6">
-              Ready to Make 2026 Your Year?
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-display font-light text-center mb-16">
+              Who This Circle Is For
             </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Join a circle of ambitious, supportive women who are committed to growing together.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-lg px-8 py-6 h-auto" asChild>
-                <Link to="/apply">Apply to Join the Circle</Link>
-              </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 h-auto" asChild>
-                <Link to="/auth">Already a Member? Sign In</Link>
-              </Button>
+            
+            <div className="grid md:grid-cols-2 gap-8 mb-16">
+              {/* For */}
+              <Card className="border-primary/20 bg-card/50">
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Check className="w-5 h-5 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-display font-medium text-primary">Perfect for...</h3>
+                  </div>
+                  <ul className="space-y-4">
+                    {[
+                      "Women who have their own business or developing their first business",
+                      "Women who want to add a digital product or assets as part of growing their business",
+                      "Women who are motivated and willing to put consistent effort into reaching their goals",
+                      "Women excited by community and peer support",
+                      "Women who want accountability without pressure",
+                      "Women who are energised by showing up for one another each week",
+                      "Women who want to make the most of 2026 and are ready to show up for themselves, their business and each other"
+                    ].map((item, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                        <span className="text-foreground/80">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              {/* Not For */}
+              <Card className="border-accent/20 bg-card/50">
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+                      <X className="w-5 h-5 text-accent" />
+                    </div>
+                    <h3 className="text-xl font-display font-medium text-accent">Not the right fit for...</h3>
+                  </div>
+                  <ul className="space-y-4">
+                    {[
+                      "Complete beginners without a defined idea or business to work on",
+                      "Women looking for step-by-step tutorials, full course or 1:1 tech setup or mentoring",
+                      "Women who currently don't have the capacity to commit to regular attendance and mutual accountability"
+                    ].map((item, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <X className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                        <span className="text-foreground/80">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
@@ -285,6 +318,8 @@ const Landing = () => {
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
+
 export default Landing;
