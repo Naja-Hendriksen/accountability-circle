@@ -57,6 +57,7 @@ const Apply = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
   const [location, setLocation] = useState("");
   const [availability, setAvailability] = useState("");
   const [commitmentLevel, setCommitmentLevel] = useState([7]);
@@ -95,6 +96,14 @@ const Apply = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast({ title: "Please enter a valid email address", variant: "destructive" });
+      return;
+    }
+    if (!confirmEmail.trim()) {
+      toast({ title: "Please confirm your email address", variant: "destructive" });
+      return;
+    }
+    if (email.toLowerCase() !== confirmEmail.toLowerCase()) {
+      toast({ title: "Email addresses do not match", variant: "destructive" });
       return;
     }
     if (!location) {
@@ -277,6 +286,23 @@ const Apply = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email address"
                   />
+                </div>
+
+                {/* Confirm Email */}
+                <div className="space-y-3">
+                  <Label htmlFor="confirmEmail" className="text-base font-medium">
+                    Confirm Email Address <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="confirmEmail"
+                    type="email"
+                    value={confirmEmail}
+                    onChange={(e) => setConfirmEmail(e.target.value)}
+                    placeholder="Re-enter your email address"
+                  />
+                  {confirmEmail && email.toLowerCase() !== confirmEmail.toLowerCase() && (
+                    <p className="text-sm text-destructive">Email addresses do not match</p>
+                  )}
                 </div>
 
                 {/* Question 1: Location */}
