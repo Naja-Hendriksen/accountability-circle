@@ -657,6 +657,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_application_approval: {
+        Args: { check_email: string }
+        Returns: {
+          applicant_first_name: string
+          applicant_last_name: string
+          is_approved: boolean
+        }[]
+      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_group_member: {
         Args: { _group_id: string; _user_id: string }

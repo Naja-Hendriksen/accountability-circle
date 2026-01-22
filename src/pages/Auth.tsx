@@ -67,25 +67,23 @@ export default function Auth() {
           return;
         }
 
-        // Check if email is in approved applications
-        // Check if email is in approved applications
-        const { data: application, error: appError } = await supabase
-          .from('applications')
-          .select('id, first_name, last_name, status')
-          .ilike('email', email.trim())
-          .eq('status', 'approved')
-          .maybeSingle();
+        // Check if email has an approved application via secure RPC
+        const { data: approvalData, error: appError } = await supabase
+          .rpc('check_application_approval', { check_email: email.trim() });
 
         if (appError) throw appError;
 
-        if (!application) {
+        // RPC returns array - check if we got a result
+        const approval = approvalData && approvalData.length > 0 ? approvalData[0] : null;
+
+        if (!approval || !approval.is_approved) {
           setAccessError('This email has not been granted access to the group. Please use the email you applied with, or apply below to become a member.');
           setSubmitting(false);
           return;
         }
 
         // Use name from approved application
-        const fullName = `${application.first_name} ${application.last_name}`.trim();
+        const fullName = `${approval.applicant_first_name} ${approval.applicant_last_name}`.trim();
         
         const { error } = await signUp(email, password, fullName);
         if (error) throw error;
