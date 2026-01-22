@@ -102,7 +102,7 @@ const Landing = () => {
                     <h3 className="text-xl font-display font-medium text-accent">Not the right fit for...</h3>
                   </div>
                   <ul className="space-y-4">
-                    {["Complete beginners without a defined idea or business to work on", "Women looking for step-by-step tutorials, full course or 1:1 tech setup or mentoring", "Women who are flaky or can't or don't show up for themselves or others on a consistent basis"].map((item, index) => <li key={index} className="flex items-start gap-3">
+                    {["Complete beginners without a defined idea or business to work on", "Women looking for step-by-step tutorials, full course or 1:1 tech setup or mentoring", "Women who currently don't have the capacity to commit to regular attendance and mutual accountability"].map((item, index) => <li key={index} className="flex items-start gap-3">
                         <X className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                         <span className="text-foreground/80">{item}</span>
                       </li>)}
