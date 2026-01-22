@@ -72,7 +72,7 @@ export default function Auth() {
         const { data: application, error: appError } = await supabase
           .from('applications')
           .select('id, first_name, last_name, status')
-          .eq('email', email.toLowerCase().trim())
+          .ilike('email', email.trim())
           .eq('status', 'approved')
           .maybeSingle();
 
