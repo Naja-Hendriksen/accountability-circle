@@ -17,6 +17,7 @@ import AdminGroups from "./pages/AdminGroups";
 import EmailTemplates from "./pages/EmailTemplates";
 import Information from "./pages/Information";
 import Resources from "./pages/Resources";
+import PreviewDashboard from "./pages/PreviewDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/application-submitted" element={<ApplicationSubmitted />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/guidelines" element={<Guidelines />} />
+            <Route path="/preview" element={<PreviewDashboard />} />
             <Route path="/admin/applications" element={<AdminApplications />} />
             <Route path="/admin/groups" element={<AdminGroups />} />
             <Route path="/admin/email-templates" element={<EmailTemplates />} />
