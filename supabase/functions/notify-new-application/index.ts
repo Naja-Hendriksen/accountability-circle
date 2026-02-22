@@ -10,17 +10,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface ApplicationData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  location: string;
-  availability: string;
-  commitmentLevel: number;
-  growthGoal: string;
-  digitalProduct: string;
-}
-
 // Fallback template if database template is not available
 const getFallbackApplicantEmail = (firstName: string) => ({
   subject: "We've Received Your Application!",
@@ -58,38 +47,82 @@ const getFallbackApplicantEmail = (firstName: string) => ({
 });
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const applicationData: ApplicationData = await req.json();
-    
-    console.log("Received new application notification request:", {
-      name: `${applicationData.firstName} ${applicationData.lastName}`,
-      email: applicationData.email,
-    });
+    const { application_id } = await req.json();
+
+    if (!application_id || typeof application_id !== "string") {
+      return new Response(
+        JSON.stringify({ error: "Missing application_id" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Validate UUID format to prevent injection
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(application_id)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid application_id format" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     const facilitatorEmail = Deno.env.get("FACILITATOR_EMAIL");
     if (!facilitatorEmail) {
       console.error("FACILITATOR_EMAIL not configured");
       return new Response(
-        JSON.stringify({ error: "Facilitator email not configured" }),
+        JSON.stringify({ error: "Server configuration error" }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Create Supabase client for fetching templates
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const fullName = `${applicationData.firstName} ${applicationData.lastName}`;
-    const firstName = applicationData.firstName;
-    
-    // Build the admin notification email (not editable via templates)
+    // Fetch the application from the database - this is the source of truth
+    const { data: app, error: appError } = await supabaseAdmin
+      .from("applications")
+      .select("first_name, last_name, email, location, availability, commitment_level, growth_goal, digital_product, status, created_at")
+      .eq("id", application_id)
+      .maybeSingle();
+
+    if (appError || !app) {
+      console.error("Application not found or error:", appError);
+      return new Response(
+        JSON.stringify({ error: "Application not found" }),
+        { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Only send notification for pending applications (prevents replay attacks)
+    if (app.status !== "pending") {
+      console.warn("Notification requested for non-pending application:", application_id);
+      return new Response(
+        JSON.stringify({ error: "Application already processed" }),
+        { status: 409, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    // Only send for recently created applications (within last 5 minutes)
+    const createdAt = new Date(app.created_at);
+    const now = new Date();
+    const diffMs = now.getTime() - createdAt.getTime();
+    if (diffMs > 5 * 60 * 1000) {
+      console.warn("Notification requested for old application:", application_id);
+      return new Response(
+        JSON.stringify({ error: "Application notification window expired" }),
+        { status: 409, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const fullName = `${app.first_name} ${app.last_name}`;
+    const firstName = app.first_name;
+
     const adminEmailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #333; border-bottom: 2px solid #e5e5e5; padding-bottom: 10px;">
@@ -110,31 +143,31 @@ const handler = async (req: Request): Promise<Response> => {
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #666;"><strong>Email:</strong></td>
-              <td style="padding: 8px 0; color: #333;">${applicationData.email}</td>
+              <td style="padding: 8px 0; color: #333;">${app.email}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #666;"><strong>Location:</strong></td>
-              <td style="padding: 8px 0; color: #333;">${applicationData.location}</td>
+              <td style="padding: 8px 0; color: #333;">${app.location}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #666;"><strong>Availability:</strong></td>
-              <td style="padding: 8px 0; color: #333;">${applicationData.availability}</td>
+              <td style="padding: 8px 0; color: #333;">${app.availability}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; color: #666;"><strong>Commitment:</strong></td>
-              <td style="padding: 8px 0; color: #333;">${applicationData.commitmentLevel}/10</td>
+              <td style="padding: 8px 0; color: #333;">${app.commitment_level}/10</td>
             </tr>
           </table>
         </div>
         
         <div style="background-color: #f0f7ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3 style="color: #333; margin-top: 0;">Growth Goal (3-6 months)</h3>
-          <p style="color: #555; white-space: pre-wrap;">${applicationData.growthGoal}</p>
+          <p style="color: #555; white-space: pre-wrap;">${app.growth_goal}</p>
         </div>
         
         <div style="background-color: #f5f0ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3 style="color: #333; margin-top: 0;">Digital Product</h3>
-          <p style="color: #555; white-space: pre-wrap;">${applicationData.digitalProduct}</p>
+          <p style="color: #555; white-space: pre-wrap;">${app.digital_product}</p>
         </div>
         
         <p style="font-size: 14px; color: #888; margin-top: 30px; text-align: center;">
@@ -157,7 +190,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (template) {
-      // Replace {{name}} placeholder with actual first name
       applicantEmailContent = {
         subject: template.subject.replace(/\{\{name\}\}/g, firstName),
         html: template.html_content.replace(/\{\{name\}\}/g, firstName),
@@ -167,7 +199,6 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("Using fallback template for application_received");
     }
 
-    // Send both emails in parallel
     const [adminResult, applicantResult] = await Promise.allSettled([
       resend.emails.send({
         from: "Accountability Circle <team@accountabilitycircle.co.uk>",
@@ -177,7 +208,7 @@ const handler = async (req: Request): Promise<Response> => {
       }),
       resend.emails.send({
         from: "Accountability Circle <team@accountabilitycircle.co.uk>",
-        to: [applicationData.email],
+        to: [app.email],
         subject: applicantEmailContent.subject,
         html: applicantEmailContent.html,
       }),
@@ -193,7 +224,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in notify-new-application function:", error);
     return new Response(
-      JSON.stringify({ error: "Failed to send notification", details: error.message }),
+      JSON.stringify({ error: "An error occurred processing your request" }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
