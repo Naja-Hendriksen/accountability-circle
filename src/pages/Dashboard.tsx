@@ -276,6 +276,16 @@ export default function Dashboard() {
   const weekEnd = endOfWeek(new Date(), {
     weekStartsOn: 1
   });
+
+  // Contextual hint based on day of week
+  const today = new Date().getDay(); // 0=Sun, 1=Mon, ...
+  const getPlanAheadHint = () => {
+    if (today === 0) return "Sunday: Fill this in now — it becomes your plan for tomorrow's meeting";
+    if (today === 6) return "Getting a head start? This becomes next week's plan on Monday";
+    if (today === 5) return "Planning ahead for next week? Great habit!";
+    return null;
+  };
+  const planAheadHint = getPlanAheadHint();
   return <AppLayout>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         {/* Header */}
@@ -440,13 +450,17 @@ export default function Dashboard() {
 
               {/* Next Week's Mini-Moves (Plan Ahead) */}
               {nextWeekEntry && (
-                <div className="mt-8 pt-6 border-t border-border">
-                  <div className="flex items-center gap-2 mb-4">
-                    <ChevronRight className="h-4 w-4 text-primary" />
-                    <h3 className="text-sm font-medium text-primary">
-                      Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
-                    </h3>
-                  </div>
+                <div className="mt-8 pt-6 border-t-2 border-primary/20">
+                  <div className="rounded-lg border border-primary/15 bg-primary/[0.03] p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <ChevronRight className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-semibold text-primary">
+                        Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
+                      </h3>
+                    </div>
+                    {planAheadHint && (
+                      <p className="text-xs text-muted-foreground ml-6 mb-3">{planAheadHint}</p>
+                    )}
                   <div className="space-y-2 mb-3">
                     {nextWeekMiniMoves.map(move => (
                       <div key={move.id} className="rounded-lg border transition-all duration-200 overflow-hidden"
@@ -508,6 +522,7 @@ export default function Dashboard() {
                       <Plus className="h-4 w-4" />
                       Add
                     </button>
+                  </div>
                   </div>
                 </div>
               )}
@@ -596,17 +611,22 @@ export default function Dashboard() {
               obstacles: v
             }))} placeholder="What challenges are you facing? Being honest helps the group support you." multiline />
                 {nextWeekEntry && (
-                  <div className="mt-6 pt-4 border-t border-border">
-                    <div className="flex items-center gap-2 mb-3">
-                      <ChevronRight className="h-4 w-4 text-primary" />
-                      <h3 className="text-sm font-medium text-primary">
-                        Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
-                      </h3>
+                  <div className="mt-6 pt-4 border-t-2 border-primary/20">
+                    <div className="rounded-lg border border-primary/15 bg-primary/[0.03] p-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <ChevronRight className="h-4 w-4 text-primary" />
+                        <h3 className="text-sm font-semibold text-primary">
+                          Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
+                        </h3>
+                      </div>
+                      {planAheadHint && (
+                        <p className="text-xs text-muted-foreground ml-6 mb-3">{planAheadHint}</p>
+                      )}
+                      <EditableField value={nextWeekFormData.obstacles} isEditing={editingSection === 'next_obstacles'} onEdit={() => setEditingSection('next_obstacles')} onSave={() => saveNextWeekField('obstacles')} onCancel={() => setEditingSection(null)} onChange={v => setNextWeekFormData(p => ({
+                        ...p,
+                        obstacles: v
+                      }))} placeholder="What obstacles do you anticipate next week?" multiline />
                     </div>
-                    <EditableField value={nextWeekFormData.obstacles} isEditing={editingSection === 'next_obstacles'} onEdit={() => setEditingSection('next_obstacles')} onSave={() => saveNextWeekField('obstacles')} onCancel={() => setEditingSection(null)} onChange={v => setNextWeekFormData(p => ({
-                      ...p,
-                      obstacles: v
-                    }))} placeholder="What obstacles do you anticipate next week?" multiline />
                   </div>
                 )}
               </section>
@@ -626,17 +646,22 @@ export default function Dashboard() {
               wins: v
             }))} placeholder="What went well? What insights or lessons emerged?" multiline />
                 {nextWeekEntry && (
-                  <div className="mt-6 pt-4 border-t border-border">
-                    <div className="flex items-center gap-2 mb-3">
-                      <ChevronRight className="h-4 w-4 text-primary" />
-                      <h3 className="text-sm font-medium text-primary">
-                        Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
-                      </h3>
+                  <div className="mt-6 pt-4 border-t-2 border-primary/20">
+                    <div className="rounded-lg border border-primary/15 bg-primary/[0.03] p-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <ChevronRight className="h-4 w-4 text-primary" />
+                        <h3 className="text-sm font-semibold text-primary">
+                          Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
+                        </h3>
+                      </div>
+                      {planAheadHint && (
+                        <p className="text-xs text-muted-foreground ml-6 mb-3">{planAheadHint}</p>
+                      )}
+                      <EditableField value={nextWeekFormData.wins} isEditing={editingSection === 'next_wins'} onEdit={() => setEditingSection('next_wins')} onSave={() => saveNextWeekField('wins')} onCancel={() => setEditingSection(null)} onChange={v => setNextWeekFormData(p => ({
+                        ...p,
+                        wins: v
+                      }))} placeholder="Any wins you're anticipating next week?" multiline />
                     </div>
-                    <EditableField value={nextWeekFormData.wins} isEditing={editingSection === 'next_wins'} onEdit={() => setEditingSection('next_wins')} onSave={() => saveNextWeekField('wins')} onCancel={() => setEditingSection(null)} onChange={v => setNextWeekFormData(p => ({
-                      ...p,
-                      wins: v
-                    }))} placeholder="Any wins you're anticipating next week?" multiline />
                   </div>
                 )}
               </section>
@@ -659,17 +684,22 @@ export default function Dashboard() {
             self_care: v
           }))} placeholder="Rest, boundaries, joy—what's supporting your wellbeing this week?" multiline />
               {nextWeekEntry && (
-                <div className="mt-6 pt-4 border-t border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <ChevronRight className="h-4 w-4 text-primary" />
-                    <h3 className="text-sm font-medium text-primary">
-                      Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
-                    </h3>
+                <div className="mt-6 pt-4 border-t-2 border-primary/20">
+                  <div className="rounded-lg border border-primary/15 bg-primary/[0.03] p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <ChevronRight className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-semibold text-primary">
+                        Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
+                      </h3>
+                    </div>
+                    {planAheadHint && (
+                      <p className="text-xs text-muted-foreground ml-6 mb-3">{planAheadHint}</p>
+                    )}
+                    <EditableField value={nextWeekFormData.self_care} isEditing={editingSection === 'next_self_care'} onEdit={() => setEditingSection('next_self_care')} onSave={() => saveNextWeekField('self_care')} onCancel={() => setEditingSection(null)} onChange={v => setNextWeekFormData(p => ({
+                      ...p,
+                      self_care: v
+                    }))} placeholder="How will you take care of yourself next week?" multiline />
                   </div>
-                  <EditableField value={nextWeekFormData.self_care} isEditing={editingSection === 'next_self_care'} onEdit={() => setEditingSection('next_self_care')} onSave={() => saveNextWeekField('self_care')} onCancel={() => setEditingSection(null)} onChange={v => setNextWeekFormData(p => ({
-                    ...p,
-                    self_care: v
-                  }))} placeholder="How will you take care of yourself next week?" multiline />
                 </div>
               )}
             </section>
