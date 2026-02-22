@@ -684,7 +684,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="flex items-start gap-6">
-                      <div className="flex flex-col items-center gap-2">
+                      <div className="flex flex-col items-center gap-2 pt-1">
                         <AvatarUpload currentAvatarUrl={profile?.avatar_url || null} name={profile?.name || ''} onUploadComplete={async url => {
                       await updateProfile.mutateAsync({
                         avatar_url: url
@@ -694,13 +694,14 @@ export default function Dashboard() {
                         avatar_url: null
                       });
                     }} size="md" />
-                        <span className="text-sm text-muted-foreground">Click to change</span>
+                        <span className="text-xs text-muted-foreground">Click to change</span>
                       </div>
-                      <div className="flex-1 space-y-3">
+                      <div className="flex-1 space-y-4">
                         <EditableField label="Display Name" value={formData.name} isEditing={editingSection === 'name'} onEdit={() => setEditingSection('name')} onSave={() => saveProfileField('name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
                       ...p,
                       name: v
                     }))} placeholder="Enter your name" compact />
+                        <div className="border-t border-border/50" />
                         <EditableField label="Business Name" value={formData.business_name} isEditing={editingSection === 'business_name'} onEdit={() => setEditingSection('business_name')} onSave={() => saveProfileField('business_name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
                       ...p,
                       business_name: v
