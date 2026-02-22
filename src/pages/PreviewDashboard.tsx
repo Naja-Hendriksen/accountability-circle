@@ -11,16 +11,16 @@ import logo from '@/assets/accountability-circle-logo.png';
 
 // Mock data for the preview
 const MOCK_PROFILE = {
-  name: 'Sarah',
-  growth_goal: 'Launch my online course and reach 100 students by Q4',
-  monthly_milestones: 'Complete course outline, record 5 video modules, set up landing page',
+  name: 'Maya',
+  growth_goal: 'Build and launch a digital wellness journal app by end of year',
+  monthly_milestones: 'Finalise app wireframes, write 10 journal prompts, set up beta signup page',
 };
 
 const MOCK_MINI_MOVES = [
-  { id: '1', title: 'Draft module 1 script', completed: true },
-  { id: '2', title: 'Set up email sequence for launch', completed: true },
-  { id: '3', title: 'Design course landing page mockup', completed: false },
-  { id: '4', title: 'Record intro video', completed: false },
+  { id: '1', title: 'Sketch wireframes for home screen', completed: true },
+  { id: '2', title: 'Research journaling app competitors', completed: true },
+  { id: '3', title: 'Draft first 5 journal prompts', completed: false },
+  { id: '4', title: 'Set up beta signup landing page', completed: false },
 ];
 
 const MOCK_GROUP_MEMBERS = [
