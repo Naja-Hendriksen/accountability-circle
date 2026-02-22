@@ -11,6 +11,8 @@ export interface Profile {
   avatar_url: string | null;
   growth_goal: string | null;
   monthly_milestones: string | null;
+  business_name: string | null;
+  business_website: string | null;
   notification_preference: NotificationPreference;
   created_at: string;
   updated_at: string;

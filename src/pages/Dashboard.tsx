@@ -60,6 +60,8 @@ export default function Dashboard() {
     name: '',
     growth_goal: '',
     monthly_milestones: '',
+    business_name: '',
+    business_website: '',
     obstacles: '',
     wins: '',
     self_care: ''
@@ -83,7 +85,9 @@ export default function Dashboard() {
         ...prev,
         name: profile.name || '',
         growth_goal: profile.growth_goal || '',
-        monthly_milestones: profile.monthly_milestones || ''
+        monthly_milestones: profile.monthly_milestones || '',
+        business_name: profile.business_name || '',
+        business_website: profile.business_website || ''
       }));
     }
   }, [profile]);
@@ -115,7 +119,7 @@ export default function Dashboard() {
     return <Navigate to="/auth" replace />;
   }
   const isLoading = profileLoading || weeklyLoading;
-  const saveProfileField = async (field: 'name' | 'growth_goal' | 'monthly_milestones') => {
+  const saveProfileField = async (field: 'name' | 'growth_goal' | 'monthly_milestones' | 'business_name' | 'business_website') => {
     try {
       await updateProfile.mutateAsync({
         [field]: formData[field]
@@ -692,11 +696,19 @@ export default function Dashboard() {
                     }} size="md" />
                         <span className="text-sm text-muted-foreground">Click to change</span>
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 space-y-3">
                         <EditableField label="Display Name" value={formData.name} isEditing={editingSection === 'name'} onEdit={() => setEditingSection('name')} onSave={() => saveProfileField('name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
                       ...p,
                       name: v
                     }))} placeholder="Enter your name" compact />
+                        <EditableField label="Business Name" value={formData.business_name} isEditing={editingSection === 'business_name'} onEdit={() => setEditingSection('business_name')} onSave={() => saveProfileField('business_name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
+                      ...p,
+                      business_name: v
+                    }))} placeholder="Enter your business name" compact />
+                        <EditableField label="Business Website" value={formData.business_website} isEditing={editingSection === 'business_website'} onEdit={() => setEditingSection('business_website')} onSave={() => saveProfileField('business_website')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
+                      ...p,
+                      business_website: v
+                    }))} placeholder="https://yourbusiness.com" compact />
                       </div>
                     </div>
                   </div>
