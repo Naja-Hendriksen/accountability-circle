@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { linkifyText } from '@/lib/linkify';
 import { useAuth } from '@/lib/auth';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useProfile } from '@/hooks/useProfile';
@@ -312,7 +313,7 @@ function QuestionCard({ question, groupId, currentUserId, currentUserName, isAdm
                 {formatDistanceToNow(new Date(question.created_at), { addSuffix: true })}
               </span>
             </div>
-            <p className="mt-2 text-foreground whitespace-pre-wrap">{question.content}</p>
+            <p className="mt-2 text-foreground whitespace-pre-wrap">{linkifyText(question.content)}</p>
             
             <div className="flex items-center gap-3 mt-3">
               <button
@@ -429,7 +430,7 @@ function QuestionCard({ question, groupId, currentUserId, currentUserName, isAdm
                         </button>
                       )}
                     </div>
-                    <p className="mt-1 text-sm text-foreground whitespace-pre-wrap">{answer.content}</p>
+                    <p className="mt-1 text-sm text-foreground whitespace-pre-wrap">{linkifyText(answer.content)}</p>
                     
                     {/* Like button for answer */}
                     <button
