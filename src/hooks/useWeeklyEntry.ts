@@ -21,6 +21,7 @@ export interface MiniMove {
   title: string;
   notes: string | null;
   completed: boolean;
+  carried_forward: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -85,6 +86,7 @@ export function useCurrentWeekEntry() {
                 user_id: user.id,
                 title: m.title,
                 notes: m.notes || '',
+                carried_forward: true,
               }))
             );
           }

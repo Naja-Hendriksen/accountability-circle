@@ -351,6 +351,9 @@ export default function Dashboard() {
                             onDoubleClick={() => handleStartEditMove(move)}
                           >
                             {move.title}
+                            {move.carried_forward && (
+                              <span className="ml-2 inline-flex items-center text-[10px] font-medium text-muted-foreground/70 bg-muted/50 px-1.5 py-0.5 rounded-full leading-none">↩ carried over</span>
+                            )}
                           </span>
                           <button onClick={() => handleToggleNotes(move)} className={`p-1 rounded transition-colors ${expandedMoveId === move.id ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'} ${move.notes ? 'opacity-100' : 'opacity-50 hover:opacity-100'}`} title="Notes">
                             <Edit3 className="h-3.5 w-3.5" />

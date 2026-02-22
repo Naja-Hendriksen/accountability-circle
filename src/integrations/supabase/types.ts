@@ -511,6 +511,7 @@ export type Database = {
       }
       mini_moves: {
         Row: {
+          carried_forward: boolean
           completed: boolean
           created_at: string
           id: string
@@ -521,6 +522,7 @@ export type Database = {
           weekly_entry_id: string
         }
         Insert: {
+          carried_forward?: boolean
           completed?: boolean
           created_at?: string
           id?: string
@@ -531,6 +533,7 @@ export type Database = {
           weekly_entry_id: string
         }
         Update: {
+          carried_forward?: boolean
           completed?: boolean
           created_at?: string
           id?: string
