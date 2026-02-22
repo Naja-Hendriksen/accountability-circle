@@ -8,24 +8,40 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FileDown, Upload, Trash2, FileText } from "lucide-react";
+import { FileDown, Upload, Trash2, FileText, Info, ExternalLink, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useRef } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+type Resource = {
+  id: string;
+  title: string;
+  description: string | null;
+  file_path: string | null;
+  file_name: string | null;
+  file_size: number | null;
+  uploaded_by: string;
+  resource_type: string;
+  external_link: string | null;
+  created_at: string;
+  updated_at: string;
+};
 
 export default function Resources() {
   const { user } = useAuth();
   const { data: isAdmin } = useIsAdmin();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
+  const [uploadTab, setUploadTab] = useState("file");
   const [uploadForm, setUploadForm] = useState({
     title: "",
     description: "",
+    external_link: "",
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Fetch resources
   const { data: resources, isLoading: resourcesLoading } = useQuery({
     queryKey: ["resources"],
     queryFn: async () => {
@@ -33,75 +49,86 @@ export default function Resources() {
         .from("resources")
         .select("*")
         .order("created_at", { ascending: false });
-      
       if (error) throw error;
-      return data;
+      return data as Resource[];
     },
     enabled: !!user,
   });
 
-  // Upload mutation
   const uploadMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedFile || !uploadForm.title) {
-        throw new Error("Please provide a title and select a file");
+      if (!uploadForm.title.trim()) {
+        throw new Error("Please provide a title");
       }
 
-      // Upload file to storage
-      const filePath = `${Date.now()}-${selectedFile.name}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from("resources")
-        .upload(filePath, selectedFile);
+      if (uploadTab === "file") {
+        if (!selectedFile) throw new Error("Please select a file");
 
-      if (uploadError) throw uploadError;
+        const filePath = `${Date.now()}-${selectedFile.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from("resources")
+          .upload(filePath, selectedFile);
+        if (uploadError) throw uploadError;
 
-      // Insert metadata
-      const { error: insertError } = await supabase
-        .from("resources")
-        .insert({
-          title: uploadForm.title,
-          description: uploadForm.description,
-          file_path: filePath,
-          file_name: selectedFile.name,
-          file_size: selectedFile.size,
-          uploaded_by: user?.id,
-        });
+        const { error: insertError } = await supabase
+          .from("resources")
+          .insert({
+            title: uploadForm.title.trim(),
+            description: uploadForm.description.trim() || null,
+            file_path: filePath,
+            file_name: selectedFile.name,
+            file_size: selectedFile.size,
+            uploaded_by: user?.id,
+            resource_type: "file",
+          });
 
-      if (insertError) {
-        // Clean up uploaded file if metadata insert fails
-        await supabase.storage.from("resources").remove([filePath]);
-        throw insertError;
+        if (insertError) {
+          await supabase.storage.from("resources").remove([filePath]);
+          throw insertError;
+        }
+      } else {
+        if (!uploadForm.description.trim()) {
+          throw new Error("Please provide a description for the information point");
+        }
+
+        const { error: insertError } = await supabase
+          .from("resources")
+          .insert({
+            title: uploadForm.title.trim(),
+            description: uploadForm.description.trim(),
+            external_link: uploadForm.external_link.trim() || null,
+            uploaded_by: user?.id,
+            resource_type: "info",
+          });
+
+        if (insertError) throw insertError;
       }
     },
     onSuccess: () => {
-      toast.success("Resource uploaded successfully");
-      setUploadForm({ title: "", description: "" });
+      toast.success(uploadTab === "file" ? "Resource uploaded successfully" : "Information point added successfully");
+      setUploadForm({ title: "", description: "", external_link: "" });
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       queryClient.invalidateQueries({ queryKey: ["resources"] });
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to upload resource");
+      toast.error(error.message || "Failed to add resource");
     },
   });
 
-  // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: async (resource: { id: string; file_path: string }) => {
-      // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from("resources")
-        .remove([resource.file_path]);
+    mutationFn: async (resource: Resource) => {
+      if (resource.file_path) {
+        const { error: storageError } = await supabase.storage
+          .from("resources")
+          .remove([resource.file_path]);
+        if (storageError) throw storageError;
+      }
 
-      if (storageError) throw storageError;
-
-      // Delete metadata
       const { error: dbError } = await supabase
         .from("resources")
         .delete()
         .eq("id", resource.id);
-
       if (dbError) throw dbError;
     },
     onSuccess: () => {
@@ -165,14 +192,13 @@ export default function Resources() {
           </p>
         </div>
 
-        {/* Downloadable Resources */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-muted">
                 <FileDown className="h-5 w-5 text-foreground" />
               </div>
-              <CardTitle>Downloadable Resources</CardTitle>
+              <CardTitle>Resources</CardTitle>
             </div>
             <CardDescription>
               Access guides, templates, and other materials shared by your facilitator
@@ -184,103 +210,190 @@ export default function Resources() {
             ) : resources && resources.length > 0 ? (
               <div className="space-y-3">
                 {resources.map((resource) => (
-                  <div 
+                  <ResourceItem
                     key={resource.id}
-                    className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-8 w-8 text-primary/70" />
-                      <div>
-                        <p className="font-medium text-foreground">{resource.title}</p>
-                        {resource.description && (
-                          <p className="text-sm text-muted-foreground">{resource.description}</p>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {resource.file_name} • {formatFileSize(resource.file_size || 0)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownload(resource.file_path, resource.file_name)}
-                      >
-                        <FileDown className="h-4 w-4 mr-1" />
-                        Download
-                      </Button>
-                      {isAdmin && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteMutation.mutate({ id: resource.id, file_path: resource.file_path })}
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+                    resource={resource}
+                    isAdmin={!!isAdmin}
+                    onDownload={handleDownload}
+                    onDelete={(r) => deleteMutation.mutate(r)}
+                    isDeleting={deleteMutation.isPending}
+                    formatFileSize={formatFileSize}
+                  />
                 ))}
               </div>
             ) : (
               <p className="text-muted-foreground text-sm">No resources available yet.</p>
             )}
 
-            {/* Admin Upload Section */}
             {isAdmin && (
               <div className="mt-6 pt-6 border-t">
                 <h4 className="font-medium text-foreground mb-4 flex items-center gap-2">
-                  <Upload className="h-4 w-4" />
-                  Upload New Resource (Admin Only)
+                  <Plus className="h-4 w-4" />
+                  Add New Resource (Admin Only)
                 </h4>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Title *</Label>
-                    <Input
-                      id="title"
-                      value={uploadForm.title}
-                      onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
-                      placeholder="e.g., Weekly Planning Template"
-                    />
+
+                <Tabs value={uploadTab} onValueChange={setUploadTab}>
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="file" className="flex items-center gap-1.5">
+                      <Upload className="h-3.5 w-3.5" />
+                      PDF File
+                    </TabsTrigger>
+                    <TabsTrigger value="info" className="flex items-center gap-1.5">
+                      <Info className="h-3.5 w-3.5" />
+                      Info Point
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Title *</Label>
+                      <Input
+                        id="title"
+                        value={uploadForm.title}
+                        onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
+                        placeholder={uploadTab === "file" ? "e.g., Weekly Planning Template" : "e.g., Useful tool for focus"}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description">
+                        Description {uploadTab === "info" ? "*" : ""}
+                      </Label>
+                      <Textarea
+                        id="description"
+                        value={uploadForm.description}
+                        onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
+                        placeholder={uploadTab === "file" ? "Brief description of this resource" : "Describe this information point..."}
+                        rows={uploadTab === "info" ? 4 : 2}
+                      />
+                    </div>
+
+                    <TabsContent value="file" className="mt-0 p-0">
+                      <div className="space-y-2">
+                        <Label htmlFor="file">PDF File *</Label>
+                        <Input
+                          id="file"
+                          type="file"
+                          accept=".pdf,application/pdf"
+                          ref={fileInputRef}
+                          onChange={handleFileSelect}
+                        />
+                        {selectedFile && (
+                          <p className="text-sm text-muted-foreground">
+                            Selected: {selectedFile.name} ({formatFileSize(selectedFile.size)})
+                          </p>
+                        )}
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="info" className="mt-0 p-0">
+                      <div className="space-y-2">
+                        <Label htmlFor="external_link">External Link (optional)</Label>
+                        <Input
+                          id="external_link"
+                          type="url"
+                          value={uploadForm.external_link}
+                          onChange={(e) => setUploadForm({ ...uploadForm, external_link: e.target.value })}
+                          placeholder="https://example.com"
+                        />
+                      </div>
+                    </TabsContent>
+
+                    <Button
+                      onClick={handleUpload}
+                      disabled={
+                        !uploadForm.title.trim() ||
+                        (uploadTab === "file" && !selectedFile) ||
+                        (uploadTab === "info" && !uploadForm.description.trim()) ||
+                        isUploading
+                      }
+                    >
+                      {isUploading
+                        ? "Saving..."
+                        : uploadTab === "file"
+                        ? "Upload Resource"
+                        : "Add Info Point"}
+                    </Button>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={uploadForm.description}
-                      onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
-                      placeholder="Brief description of this resource"
-                      rows={2}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="file">PDF File *</Label>
-                    <Input
-                      id="file"
-                      type="file"
-                      accept=".pdf,application/pdf"
-                      ref={fileInputRef}
-                      onChange={handleFileSelect}
-                    />
-                    {selectedFile && (
-                      <p className="text-sm text-muted-foreground">
-                        Selected: {selectedFile.name} ({formatFileSize(selectedFile.size)})
-                      </p>
-                    )}
-                  </div>
-                  <Button
-                    onClick={handleUpload}
-                    disabled={!uploadForm.title || !selectedFile || isUploading}
-                  >
-                    {isUploading ? "Uploading..." : "Upload Resource"}
-                  </Button>
-                </div>
+                </Tabs>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
     </AppLayout>
+  );
+}
+
+function ResourceItem({
+  resource,
+  isAdmin,
+  onDownload,
+  onDelete,
+  isDeleting,
+  formatFileSize,
+}: {
+  resource: Resource;
+  isAdmin: boolean;
+  onDownload: (filePath: string, fileName: string) => void;
+  onDelete: (resource: Resource) => void;
+  isDeleting: boolean;
+  formatFileSize: (bytes: number) => string;
+}) {
+  const isInfo = resource.resource_type === "info";
+
+  return (
+    <div className="flex items-start justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+      <div className="flex items-start gap-3 min-w-0 flex-1">
+        {isInfo ? (
+          <Info className="h-8 w-8 text-accent-foreground/70 flex-shrink-0 mt-0.5" />
+        ) : (
+          <FileText className="h-8 w-8 text-primary/70 flex-shrink-0 mt-0.5" />
+        )}
+        <div className="min-w-0">
+          <p className="font-medium text-foreground">{resource.title}</p>
+          {resource.description && (
+            <p className="text-sm text-muted-foreground mt-0.5 whitespace-pre-line">{resource.description}</p>
+          )}
+          {!isInfo && resource.file_name && (
+            <p className="text-xs text-muted-foreground mt-1">
+              {resource.file_name} • {formatFileSize(resource.file_size || 0)}
+            </p>
+          )}
+          {isInfo && resource.external_link && (
+            <a
+              href={resource.external_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-1.5"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Visit link
+            </a>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+        {!isInfo && resource.file_path && resource.file_name && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDownload(resource.file_path!, resource.file_name!)}
+          >
+            <FileDown className="h-4 w-4 mr-1" />
+            Download
+          </Button>
+        )}
+        {isAdmin && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(resource)}
+            disabled={isDeleting}
+          >
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }
