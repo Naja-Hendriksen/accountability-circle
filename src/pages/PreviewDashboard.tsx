@@ -25,6 +25,18 @@ const MOCK_MINI_MOVES = [
 
 const MOCK_GROUP_MEMBERS = [
   {
+    name: 'Maya',
+    avatar: null,
+    initials: 'M',
+    business: null,
+    growth_goal: MOCK_PROFILE.growth_goal,
+    monthly: MOCK_PROFILE.monthly_milestones,
+    miniMoves: MOCK_MINI_MOVES.map(m => ({ title: m.title, completed: m.completed })),
+    wins: 'Completed my first wireframe prototype — feels real now!',
+    obstacles: 'Finding the right journaling tone — informative vs personal',
+    selfCare: 'Evening walks and screen-free Sundays',
+  },
+  {
     name: 'Emma Johnson',
     avatar: null,
     initials: 'E',
