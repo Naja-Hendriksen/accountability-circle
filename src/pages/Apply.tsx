@@ -158,7 +158,7 @@ const Apply = () => {
     setIsSubmitting(true);
     
     try {
-      const { error } = await supabase.from("applications").insert({
+      const { data: insertedApp, error } = await supabase.from("applications").insert({
         first_name: firstName,
         last_name: lastName,
         email,
@@ -171,21 +171,14 @@ const Apply = () => {
         excitement,
         agreed_to_guidelines: agreeGuidelines === "yes",
         gdpr_consent: consentGiven,
-      });
+      }).select('id').single();
 
       if (error) throw error;
 
       // Notify admin about new application (fire and forget - don't block user)
       supabase.functions.invoke("notify-new-application", {
         body: {
-          firstName,
-          lastName,
-          email,
-          location,
-          availability,
-          commitmentLevel: commitmentLevel[0],
-          growthGoal,
-          digitalProduct,
+          application_id: insertedApp.id,
         },
       }).catch((notifyError) => {
         console.error("Failed to send admin notification:", notifyError);
