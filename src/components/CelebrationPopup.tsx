@@ -3,12 +3,11 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Trophy, PartyPopper, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
+import { startOfMonth, subMonths, endOfMonth, format } from 'date-fns';
 
 interface CompletedMove {
   id: string;
   title: string;
-  completed: boolean;
-  updated_at: string;
 }
 
 export default function CelebrationPopup() {
@@ -17,51 +16,67 @@ export default function CelebrationPopup() {
   const [moves, setMoves] = useState<CompletedMove[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [animating, setAnimating] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [checked, setChecked] = useState(false);
 
-  const storageKey = user ? `celebration_last_seen_${user.id}` : '';
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const storageKey = user ? `celebration_seen_${user.id}` : '';
 
-  const fetchNewCompletions = useCallback(async () => {
+  const prevMonthStart = startOfMonth(subMonths(now, 1));
+  const prevMonthEnd = endOfMonth(subMonths(now, 1));
+  const prevMonthLabel = format(prevMonthStart, 'MMMM yyyy');
+
+  const fetchPrevMonthCompletions = useCallback(async () => {
     if (!user) return [];
-    const lastSeen = localStorage.getItem(storageKey);
 
-    let query = supabase
+    // Get all weekly entries that overlap with previous month
+    const { data: entries, error: entriesError } = await supabase
+      .from('weekly_entries')
+      .select('id')
+      .eq('user_id', user.id)
+      .gte('week_start', prevMonthStart.toISOString().split('T')[0])
+      .lte('week_start', prevMonthEnd.toISOString().split('T')[0]);
+
+    if (entriesError || !entries?.length) return [];
+
+    const entryIds = entries.map(e => e.id);
+
+    const { data, error } = await supabase
       .from('mini_moves')
-      .select('id, title, completed, updated_at')
+      .select('id, title')
       .eq('user_id', user.id)
       .eq('completed', true)
+      .in('weekly_entry_id', entryIds)
       .order('updated_at', { ascending: true });
 
-    if (lastSeen) {
-      query = query.gt('updated_at', lastSeen);
-    }
-
-    const { data, error } = await query;
     if (error) {
       console.error('Error fetching completions:', error);
       return [];
     }
     return (data || []) as CompletedMove[];
-  }, [user, storageKey]);
+  }, [user, prevMonthStart, prevMonthEnd]);
 
-  const handleOpen = async () => {
-    setLoading(true);
-    const completions = await fetchNewCompletions();
-    setMoves(completions);
-    setCurrentIndex(0);
-    setAnimating(false);
-    setOpen(true);
-    setLoading(false);
-  };
+  // Auto-trigger check on mount
+  useEffect(() => {
+    if (!user || checked) return;
+    setChecked(true);
+
+    const lastSeenMonth = localStorage.getItem(storageKey);
+    if (lastSeenMonth === currentMonthKey) return; // Already seen this month
+
+    // Fetch and show
+    fetchPrevMonthCompletions().then(completions => {
+      if (completions.length > 0) {
+        setMoves(completions);
+        setCurrentIndex(0);
+        setAnimating(false);
+        setOpen(true);
+      }
+    });
+  }, [user, checked, storageKey, currentMonthKey, fetchPrevMonthCompletions]);
 
   const handleClose = () => {
-    if (moves.length > 0) {
-      // Mark as seen — use the latest updated_at
-      const latest = moves.reduce((max, m) =>
-        m.updated_at > max ? m.updated_at : max, moves[0].updated_at
-      );
-      localStorage.setItem(storageKey, latest);
-    }
+    localStorage.setItem(storageKey, currentMonthKey);
     setOpen(false);
   };
 
@@ -80,15 +95,23 @@ export default function CelebrationPopup() {
     return () => clearInterval(interval);
   }, [open, moves.length]);
 
+  // Manual trigger button
+  const handleManualOpen = async () => {
+    const completions = await fetchPrevMonthCompletions();
+    setMoves(completions);
+    setCurrentIndex(0);
+    setAnimating(false);
+    setOpen(true);
+  };
+
   if (!user) return null;
 
   return (
     <>
       <button
-        onClick={handleOpen}
-        disabled={loading}
+        onClick={handleManualOpen}
         className="btn-primary flex items-center gap-2 text-sm"
-        title="Celebrate your accomplishments!"
+        title="Celebrate last month's accomplishments!"
       >
         <PartyPopper className="h-4 w-4" />
         Celebrate
@@ -96,21 +119,20 @@ export default function CelebrationPopup() {
 
       <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
         <DialogContent className="sm:max-w-md text-center overflow-hidden">
-          <DialogTitle className="sr-only">Celebration</DialogTitle>
+          <DialogTitle className="sr-only">Monthly Celebration</DialogTitle>
 
           {moves.length === 0 ? (
             <div className="py-8 space-y-4">
               <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
                 <Trophy className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h2 className="heading-section text-foreground">No new completions yet</h2>
+              <h2 className="heading-section text-foreground">No completions in {prevMonthLabel}</h2>
               <p className="text-sm text-muted-foreground">
-                Keep working on your mini-moves — come back to celebrate when you've checked some off!
+                Keep working on your mini-moves — you've got this!
               </p>
             </div>
           ) : (
             <div className="py-6 space-y-6">
-              {/* Confetti-style header */}
               <div className="space-y-2">
                 <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center animate-scale-in">
                   <PartyPopper className="h-10 w-10 text-primary" />
@@ -119,13 +141,13 @@ export default function CelebrationPopup() {
                   🎉 Amazing Work!
                 </h2>
                 <p className="text-muted-foreground text-sm">
-                  You've completed
+                  In <span className="font-medium text-foreground">{prevMonthLabel}</span> you completed
                 </p>
                 <p className="text-4xl font-bold text-primary">
                   {moves.length}
                 </p>
                 <p className="text-muted-foreground text-sm">
-                  mini-move{moves.length !== 1 ? 's' : ''} since your last celebration!
+                  mini-move{moves.length !== 1 ? 's' : ''}!
                 </p>
               </div>
 
@@ -144,17 +166,18 @@ export default function CelebrationPopup() {
                   </span>
                 </div>
 
-                {/* Progress dots */}
-                <div className="absolute bottom-1.5 left-0 right-0 flex justify-center gap-1">
-                  {moves.map((_, i) => (
-                    <div
-                      key={i}
-                      className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
-                        i === currentIndex ? 'bg-primary' : 'bg-border'
-                      }`}
-                    />
-                  ))}
-                </div>
+                {moves.length > 1 && (
+                  <div className="absolute bottom-1.5 left-0 right-0 flex justify-center gap-1">
+                    {moves.map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                          i === currentIndex ? 'bg-primary' : 'bg-border'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
 
               <button
