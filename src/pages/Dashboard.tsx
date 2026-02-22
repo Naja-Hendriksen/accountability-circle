@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth';
 import AppLayout from '@/components/layout/AppLayout';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { useCurrentWeekEntry, useUpdateWeeklyEntry, useMiniMoves, useAddMiniMove, useToggleMiniMove, useDeleteMiniMove, useUpdateMiniMove, useAllWeeklyEntries, usePreviousWeekEntry, useNextWeekEntry, isWeekEditable, WeeklyEntry, MiniMove } from '@/hooks/useWeeklyEntry';
-import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown, ChevronRight, Mail, Bell, BellOff, History, Eye } from 'lucide-react';
+import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown, ChevronRight, Mail, Bell, BellOff, History, Eye, User, Briefcase, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import AvatarUpload from '@/components/AvatarUpload';
@@ -697,16 +697,17 @@ export default function Dashboard() {
                         <span className="text-xs text-muted-foreground">Click to change</span>
                       </div>
                       <div className="flex-1 space-y-4">
-                        <EditableField label="Display Name" value={formData.name} isEditing={editingSection === 'name'} onEdit={() => setEditingSection('name')} onSave={() => saveProfileField('name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
+                        <EditableField label="Display Name" icon={<User className="h-4 w-4 text-muted-foreground" />} value={formData.name} isEditing={editingSection === 'name'} onEdit={() => setEditingSection('name')} onSave={() => saveProfileField('name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
                       ...p,
                       name: v
                     }))} placeholder="Enter your name" compact />
                         <div className="border-t border-border/50" />
-                        <EditableField label="Business Name" value={formData.business_name} isEditing={editingSection === 'business_name'} onEdit={() => setEditingSection('business_name')} onSave={() => saveProfileField('business_name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
+                        <EditableField label="Business Name" icon={<Briefcase className="h-4 w-4 text-muted-foreground" />} value={formData.business_name} isEditing={editingSection === 'business_name'} onEdit={() => setEditingSection('business_name')} onSave={() => saveProfileField('business_name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
                       ...p,
                       business_name: v
                     }))} placeholder="Enter your business name" compact />
-                        <EditableField label="Business Website" value={formData.business_website} isEditing={editingSection === 'business_website'} onEdit={() => setEditingSection('business_website')} onSave={() => saveProfileField('business_website')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
+                        <div className="border-t border-border/50" />
+                        <EditableField label="Business Website" icon={<Globe className="h-4 w-4 text-muted-foreground" />} value={formData.business_website} isEditing={editingSection === 'business_website'} onEdit={() => setEditingSection('business_website')} onSave={() => saveProfileField('business_website')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
                       ...p,
                       business_website: v
                     }))} placeholder="https://yourbusiness.com" compact />
@@ -785,6 +786,7 @@ export default function Dashboard() {
 // Editable Field Component
 interface EditableFieldProps {
   label?: string;
+  icon?: React.ReactNode;
   value: string;
   isEditing: boolean;
   onEdit: () => void;
@@ -797,6 +799,7 @@ interface EditableFieldProps {
 }
 function EditableField({
   label,
+  icon,
   value,
   isEditing,
   onEdit,
@@ -809,7 +812,10 @@ function EditableField({
 }: EditableFieldProps) {
   if (isEditing) {
     return <div className={compact ? "space-y-2" : "space-y-3"}>
-        {label && <label className="label-text text-sm">{label}</label>}
+        {label && <div className="flex items-center gap-2">
+          {icon}
+          <h3 className="text-sm font-semibold">{label}</h3>
+        </div>}
         {multiline ? <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className={`input-field resize-y ${compact ? 'min-h-[60px] text-sm' : 'min-h-[100px]'}`} autoFocus /> : <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className={`input-field ${compact ? 'text-sm py-2' : ''}`} autoFocus />}
         <div className="flex gap-2">
           <button onClick={onSave} className={`btn-primary flex items-center gap-2 ${compact ? 'text-sm py-1.5 px-3' : ''}`}>
@@ -823,7 +829,10 @@ function EditableField({
       </div>;
   }
   return <div className="group">
-      {label && <label className="label-text text-sm">{label}</label>}
+      {label && <div className="flex items-center gap-2 mb-1.5">
+        {icon}
+        <h3 className="text-sm font-semibold">{label}</h3>
+      </div>}
       <div onClick={onEdit} className={`rounded-lg border border-transparent bg-muted/30 hover:bg-muted/50 hover:border-border cursor-pointer transition-all duration-200 ${compact ? 'p-2.5 min-h-[40px]' : 'p-4 min-h-[60px]'}`}>
         {value ? <p className={`whitespace-pre-wrap ${compact ? 'text-sm' : 'text-body'}`}>{value}</p> : <p className={`text-muted-foreground italic ${compact ? 'text-sm' : ''}`}>{placeholder || 'Click to edit...'}</p>}
       </div>
