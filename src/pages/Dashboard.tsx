@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth';
 import AppLayout from '@/components/layout/AppLayout';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
-import { useCurrentWeekEntry, useUpdateWeeklyEntry, useMiniMoves, useAddMiniMove, useToggleMiniMove, useDeleteMiniMove, useAllWeeklyEntries, usePreviousWeekEntry, isWeekEditable, WeeklyEntry, MiniMove } from '@/hooks/useWeeklyEntry';
-import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown, Mail, Bell, BellOff, History, Eye } from 'lucide-react';
+import { useCurrentWeekEntry, useUpdateWeeklyEntry, useMiniMoves, useAddMiniMove, useToggleMiniMove, useDeleteMiniMove, useAllWeeklyEntries, usePreviousWeekEntry, useNextWeekEntry, isWeekEditable, WeeklyEntry, MiniMove } from '@/hooks/useWeeklyEntry';
+import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown, ChevronRight, Mail, Bell, BellOff, History, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import AvatarUpload from '@/components/AvatarUpload';
@@ -33,6 +33,9 @@ export default function Dashboard() {
     data: previousWeekEntry
   } = usePreviousWeekEntry();
   const {
+    data: nextWeekEntry
+  } = useNextWeekEntry();
+  const {
     data: allHistoricalEntries = []
   } = useAllWeeklyEntries();
   const updateWeeklyEntry = useUpdateWeeklyEntry();
@@ -42,6 +45,9 @@ export default function Dashboard() {
   const {
     data: previousWeekMiniMoves = []
   } = useMiniMoves(previousWeekEntry?.id);
+  const {
+    data: nextWeekMiniMoves = []
+  } = useMiniMoves(nextWeekEntry?.id);
   const addMiniMove = useAddMiniMove();
   const toggleMiniMove = useToggleMiniMove();
   const deleteMiniMove = useDeleteMiniMove();
@@ -57,6 +63,7 @@ export default function Dashboard() {
     self_care: ''
   });
   const [newMoveTitle, setNewMoveTitle] = useState('');
+  const [newNextWeekMoveTitle, setNewNextWeekMoveTitle] = useState('');
 
   // Sync form data with loaded data
   useEffect(() => {
@@ -290,6 +297,74 @@ export default function Dashboard() {
                   Add
                 </button>
               </div>
+
+              {/* Next Week's Mini-Moves (Plan Ahead) */}
+              {nextWeekEntry && (
+                <div className="mt-8 pt-6 border-t border-border">
+                  <div className="flex items-center gap-2 mb-4">
+                    <ChevronRight className="h-4 w-4 text-primary" />
+                    <h3 className="text-sm font-medium text-primary">
+                      Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
+                    </h3>
+                  </div>
+                  <div className="space-y-2 mb-3">
+                    {nextWeekMiniMoves.map(move => (
+                      <div key={move.id} className={`
+                        flex items-center gap-3 p-2.5 rounded-lg border transition-all duration-200
+                        ${move.completed ? 'bg-sage-light/20 border-primary/10' : 'bg-background border-border hover:border-primary/30'}
+                      `}>
+                        <button 
+                          onClick={() => handleToggleMove(move.id, move.completed, nextWeekEntry.id)} 
+                          className={`
+                            flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center
+                            transition-all duration-200
+                            ${move.completed ? 'bg-primary border-primary' : 'border-border hover:border-primary'}
+                          `}
+                        >
+                          {move.completed && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
+                        </button>
+                        <span className={`flex-1 text-sm ${move.completed ? 'line-through text-muted-foreground' : ''}`}>
+                          {move.title}
+                        </span>
+                        <button 
+                          onClick={() => handleDeleteMove(move.id, nextWeekEntry.id)} 
+                          className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newNextWeekMoveTitle}
+                      onChange={e => setNewNextWeekMoveTitle(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && nextWeekEntry && newNextWeekMoveTitle.trim()) {
+                          addMiniMove.mutateAsync({ weeklyEntryId: nextWeekEntry.id, title: newNextWeekMoveTitle.trim() })
+                            .then(() => setNewNextWeekMoveTitle(''));
+                        }
+                      }}
+                      placeholder="Plan a mini-move for next week..."
+                      className="input-field flex-1 text-sm"
+                    />
+                    <button
+                      onClick={() => {
+                        if (nextWeekEntry && newNextWeekMoveTitle.trim()) {
+                          addMiniMove.mutateAsync({ weeklyEntryId: nextWeekEntry.id, title: newNextWeekMoveTitle.trim() })
+                            .then(() => setNewNextWeekMoveTitle(''));
+                        }
+                      }}
+                      disabled={!newNextWeekMoveTitle.trim() || addMiniMove.isPending}
+                      className="btn-primary flex items-center gap-2 text-sm"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Last Week's Mini-Moves (Editable) */}
               {previousWeekEntry && previousWeekMiniMoves.length > 0 && (

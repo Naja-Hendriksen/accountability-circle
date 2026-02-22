@@ -90,6 +90,45 @@ export function usePreviousWeekEntry() {
   });
 }
 
+export function useNextWeekEntry() {
+  const { user } = useAuth();
+  const nextWeek = new Date();
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  const weekStart = getWeekStart(nextWeek);
+
+  return useQuery({
+    queryKey: ['weeklyEntry', user?.id, weekStart],
+    queryFn: async () => {
+      if (!user) return null;
+
+      // Try to get existing entry
+      let { data, error } = await supabase
+        .from('weekly_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('week_start', weekStart)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      // Create entry if it doesn't exist
+      if (!data) {
+        const { data: newData, error: insertError } = await supabase
+          .from('weekly_entries')
+          .insert({ user_id: user.id, week_start: weekStart })
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        data = newData;
+      }
+
+      return data as WeeklyEntry;
+    },
+    enabled: !!user,
+  });
+}
+
 // Get all historical weekly entries (excluding current week)
 export function useAllWeeklyEntries() {
   const { user } = useAuth();
@@ -114,14 +153,17 @@ export function useAllWeeklyEntries() {
   });
 }
 
-// Helper to check if a week is editable (current week or last week)
+// Helper to check if a week is editable (current week, last week, or next week)
 export function isWeekEditable(weekStart: string): boolean {
   const currentWeekStart = getWeekStart();
   const lastWeek = new Date();
   lastWeek.setDate(lastWeek.getDate() - 7);
   const lastWeekStart = getWeekStart(lastWeek);
+  const nextWeek = new Date();
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  const nextWeekStart = getWeekStart(nextWeek);
   
-  return weekStart === currentWeekStart || weekStart === lastWeekStart;
+  return weekStart === currentWeekStart || weekStart === lastWeekStart || weekStart === nextWeekStart;
 }
 
 export function useUpdateWeeklyEntry() {
