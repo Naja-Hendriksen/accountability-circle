@@ -593,10 +593,12 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
-          file_name: string
-          file_path: string
+          external_link: string | null
+          file_name: string | null
+          file_path: string | null
           file_size: number | null
           id: string
+          resource_type: string
           title: string
           updated_at: string
           uploaded_by: string
@@ -604,10 +606,12 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
-          file_name: string
-          file_path: string
+          external_link?: string | null
+          file_name?: string | null
+          file_path?: string | null
           file_size?: number | null
           id?: string
+          resource_type?: string
           title: string
           updated_at?: string
           uploaded_by: string
@@ -615,10 +619,12 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
-          file_name?: string
-          file_path?: string
+          external_link?: string | null
+          file_name?: string | null
+          file_path?: string | null
           file_size?: number | null
           id?: string
+          resource_type?: string
           title?: string
           updated_at?: string
           uploaded_by?: string
