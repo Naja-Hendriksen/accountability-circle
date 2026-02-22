@@ -64,6 +64,11 @@ export default function Dashboard() {
     wins: '',
     self_care: ''
   });
+  const [nextWeekFormData, setNextWeekFormData] = useState({
+    obstacles: '',
+    wins: '',
+    self_care: ''
+  });
   const [newMoveTitle, setNewMoveTitle] = useState('');
   const [newNextWeekMoveTitle, setNewNextWeekMoveTitle] = useState('');
   const [editingMoveId, setEditingMoveId] = useState<string | null>(null);
@@ -92,6 +97,15 @@ export default function Dashboard() {
       }));
     }
   }, [weeklyEntry]);
+  useEffect(() => {
+    if (nextWeekEntry) {
+      setNextWeekFormData({
+        obstacles: nextWeekEntry.obstacles || '',
+        wins: nextWeekEntry.wins || '',
+        self_care: nextWeekEntry.self_care || ''
+      });
+    }
+  }, [nextWeekEntry]);
   if (authLoading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -119,13 +133,35 @@ export default function Dashboard() {
       });
     }
   };
-  const saveWeeklyField = async (field: 'obstacles' | 'wins' | 'self_care') => {
+   const saveWeeklyField = async (field: 'obstacles' | 'wins' | 'self_care') => {
     if (!weeklyEntry) return;
     try {
       await updateWeeklyEntry.mutateAsync({
         id: weeklyEntry.id,
         updates: {
           [field]: formData[field]
+        }
+      });
+      setEditingSection(null);
+      toast({
+        title: "Saved!",
+        description: "Your changes have been saved."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+  const saveNextWeekField = async (field: 'obstacles' | 'wins' | 'self_care') => {
+    if (!nextWeekEntry) return;
+    try {
+      await updateWeeklyEntry.mutateAsync({
+        id: nextWeekEntry.id,
+        updates: {
+          [field]: nextWeekFormData[field]
         }
       });
       setEditingSection(null);
@@ -559,6 +595,20 @@ export default function Dashboard() {
               ...p,
               obstacles: v
             }))} placeholder="What challenges are you facing? Being honest helps the group support you." multiline />
+                {nextWeekEntry && (
+                  <div className="mt-6 pt-4 border-t border-border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <ChevronRight className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-medium text-primary">
+                        Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
+                      </h3>
+                    </div>
+                    <EditableField value={nextWeekFormData.obstacles} isEditing={editingSection === 'next_obstacles'} onEdit={() => setEditingSection('next_obstacles')} onSave={() => saveNextWeekField('obstacles')} onCancel={() => setEditingSection(null)} onChange={v => setNextWeekFormData(p => ({
+                      ...p,
+                      obstacles: v
+                    }))} placeholder="What obstacles do you anticipate next week?" multiline />
+                  </div>
+                )}
               </section>
 
               {/* Wins & Reflections */}
@@ -575,6 +625,20 @@ export default function Dashboard() {
               ...p,
               wins: v
             }))} placeholder="What went well? What insights or lessons emerged?" multiline />
+                {nextWeekEntry && (
+                  <div className="mt-6 pt-4 border-t border-border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <ChevronRight className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-medium text-primary">
+                        Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
+                      </h3>
+                    </div>
+                    <EditableField value={nextWeekFormData.wins} isEditing={editingSection === 'next_wins'} onEdit={() => setEditingSection('next_wins')} onSave={() => saveNextWeekField('wins')} onCancel={() => setEditingSection(null)} onChange={v => setNextWeekFormData(p => ({
+                      ...p,
+                      wins: v
+                    }))} placeholder="Any wins you're anticipating next week?" multiline />
+                  </div>
+                )}
               </section>
             </div>
 
@@ -594,6 +658,20 @@ export default function Dashboard() {
             ...p,
             self_care: v
           }))} placeholder="Rest, boundaries, joy—what's supporting your wellbeing this week?" multiline />
+              {nextWeekEntry && (
+                <div className="mt-6 pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ChevronRight className="h-4 w-4 text-primary" />
+                    <h3 className="text-sm font-medium text-primary">
+                      Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
+                    </h3>
+                  </div>
+                  <EditableField value={nextWeekFormData.self_care} isEditing={editingSection === 'next_self_care'} onEdit={() => setEditingSection('next_self_care')} onSave={() => saveNextWeekField('self_care')} onCancel={() => setEditingSection(null)} onChange={v => setNextWeekFormData(p => ({
+                    ...p,
+                    self_care: v
+                  }))} placeholder="How will you take care of yourself next week?" multiline />
+                </div>
+              )}
             </section>
 
             {/* Account Settings - Collapsible */}
