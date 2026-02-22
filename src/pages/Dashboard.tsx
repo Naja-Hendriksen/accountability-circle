@@ -674,8 +674,7 @@ export default function Dashboard() {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="pt-8 space-y-10">
-                  {/* Profile Section */}
-                  <div>
+                  <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-5">
                       <div className="p-2 rounded-lg bg-primary/10">
                         <Edit3 className="h-5 w-5 text-primary" />
