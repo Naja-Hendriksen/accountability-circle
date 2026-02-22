@@ -224,26 +224,33 @@ function MemberCard({ member, currentWeekDates, previousWeekDates, delay }: Memb
             <h3 className="font-display text-xl font-semibold text-foreground truncate">
               {profile.name || 'Unnamed Member'}
             </h3>
-            {profile.growth_goal && (
-              <div className="mt-2 flex items-start gap-2">
-                <Target className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {profile.growth_goal}
-                </p>
-              </div>
-            )}
           </div>
         </div>
 
-        {profile.monthly_milestones && (
-          <div className="mt-4 p-3 rounded-lg bg-muted/30">
-            <div className="flex items-center gap-2 mb-1">
-              <Calendar className="h-4 w-4 text-primary" />
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Monthly Focus
-              </span>
+        {(profile.growth_goal || profile.monthly_milestones) && (
+          <div className="mt-4 grid sm:grid-cols-2 gap-4">
+            <div className="p-3 rounded-lg bg-muted/30">
+              <div className="flex items-center gap-2 mb-1">
+                <Target className="h-4 w-4 text-accent" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Growth Goal
+                </span>
+              </div>
+              <p className="text-sm text-foreground">
+                {profile.growth_goal || <span className="italic text-muted-foreground">Not set</span>}
+              </p>
             </div>
-            <p className="text-sm text-foreground">{profile.monthly_milestones}</p>
+            <div className="p-3 rounded-lg bg-muted/30">
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar className="h-4 w-4 text-primary" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Monthly Milestones
+                </span>
+              </div>
+              <p className="text-sm text-foreground">
+                {profile.monthly_milestones || <span className="italic text-muted-foreground">Not set</span>}
+              </p>
+            </div>
           </div>
         )}
       </div>
