@@ -354,7 +354,7 @@ export default function Dashboard() {
                 <h2 className="heading-section">Weekly Mini-Moves</h2>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Small, achievable actions for this week
+                How are you getting on with the small, achievable actions you are working on this week?
               </p>
 
               {/* Progress bar */}
@@ -448,85 +448,6 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              {/* Next Week's Mini-Moves (Plan Ahead) */}
-              {nextWeekEntry && (
-                <div className="mt-8 pt-6 border-t-2 border-primary/20">
-                  <div className="rounded-lg border border-primary/15 bg-primary/[0.03] p-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <ChevronRight className="h-4 w-4 text-primary" />
-                      <h3 className="text-sm font-semibold text-primary">
-                        Next Week ({format(new Date(nextWeekEntry.week_start), 'MMM d')}) — Plan Ahead
-                      </h3>
-                    </div>
-                    {planAheadHint && (
-                      <p className="text-xs text-muted-foreground ml-6 mb-3">{planAheadHint}</p>
-                    )}
-                  <div className="space-y-2 mb-3">
-                    {nextWeekMiniMoves.map(move => (
-                      <div key={move.id} className="rounded-lg border transition-all duration-200 overflow-hidden"
-                        style={{ borderColor: move.completed ? 'hsl(var(--primary) / 0.1)' : undefined }}>
-                        <div className={`flex items-center gap-3 p-2.5 ${move.completed ? 'bg-sage-light/20' : 'bg-background'}`}>
-                          <button 
-                            onClick={() => handleToggleMove(move.id, move.completed, nextWeekEntry.id)} 
-                            className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${move.completed ? 'bg-primary border-primary' : 'border-border hover:border-primary'}`}
-                          >
-                            {move.completed && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
-                          </button>
-                          {editingMoveId === move.id ? (
-                            <div className="flex-1 flex gap-2">
-                              <input type="text" value={editingMoveTitle} onChange={e => setEditingMoveTitle(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSaveEditMove(move, nextWeekEntry.id); if (e.key === 'Escape') setEditingMoveId(null); }} className="input-field flex-1 h-7 text-sm" autoFocus />
-                              <button onClick={() => handleSaveEditMove(move, nextWeekEntry.id)} className="p-1 rounded text-primary hover:bg-primary/10"><Save className="h-3.5 w-3.5" /></button>
-                              <button onClick={() => setEditingMoveId(null)} className="p-1 rounded text-muted-foreground hover:bg-muted"><X className="h-3.5 w-3.5" /></button>
-                            </div>
-                          ) : (
-                            <>
-                              <span className={`flex-1 text-sm cursor-pointer ${move.completed ? 'line-through text-muted-foreground' : ''}`} onDoubleClick={() => handleStartEditMove(move)}>{move.title}</span>
-                              <button onClick={() => handleToggleNotes(move)} className={`p-1 rounded transition-colors ${expandedMoveId === move.id ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'} ${move.notes ? 'opacity-100' : 'opacity-50 hover:opacity-100'}`} title="Notes"><Edit3 className="h-3 w-3" /></button>
-                              <button onClick={() => handleStartEditMove(move)} className="p-1 rounded text-muted-foreground opacity-50 hover:opacity-100 hover:text-foreground hover:bg-muted transition-colors" title="Edit"><Settings className="h-3 w-3" /></button>
-                              <button onClick={() => handleDeleteMove(move.id, nextWeekEntry.id)} className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"><X className="h-3.5 w-3.5" /></button>
-                            </>
-                          )}
-                        </div>
-                        {expandedMoveId === move.id && (
-                          <div className="px-3 pb-2.5 pt-1 border-t border-border/50 bg-muted/20">
-                            <textarea value={moveNotes[move.id] ?? move.notes ?? ''} onChange={e => setMoveNotes(prev => ({ ...prev, [move.id]: e.target.value }))} onBlur={() => handleSaveNotes(move, nextWeekEntry.id)} placeholder="Add notes..." className="w-full bg-transparent text-sm text-muted-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none min-h-[40px]" rows={2} />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newNextWeekMoveTitle}
-                      onChange={e => setNewNextWeekMoveTitle(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && nextWeekEntry && newNextWeekMoveTitle.trim()) {
-                          addMiniMove.mutateAsync({ weeklyEntryId: nextWeekEntry.id, title: newNextWeekMoveTitle.trim() })
-                            .then(() => setNewNextWeekMoveTitle(''));
-                        }
-                      }}
-                      placeholder="Plan a mini-move for next week..."
-                      className="input-field flex-1 text-sm"
-                    />
-                    <button
-                      onClick={() => {
-                        if (nextWeekEntry && newNextWeekMoveTitle.trim()) {
-                          addMiniMove.mutateAsync({ weeklyEntryId: nextWeekEntry.id, title: newNextWeekMoveTitle.trim() })
-                            .then(() => setNewNextWeekMoveTitle(''));
-                        }
-                      }}
-                      disabled={!newNextWeekMoveTitle.trim() || addMiniMove.isPending}
-                      className="btn-primary flex items-center gap-2 text-sm"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Add
-                    </button>
-                  </div>
-                  </div>
-                </div>
-              )}
-
               {/* Last Week's Mini-Moves (Editable) */}
               {previousWeekEntry && previousWeekMiniMoves.length > 0 && (
                 <div className="mt-8 pt-6 border-t border-border">
@@ -593,6 +514,88 @@ export default function Dashboard() {
                 </Collapsible>
               )}
             </section>
+
+            {/* Plan Next Week's Mini-Moves - Separate Card */}
+            {nextWeekEntry && (
+              <section className="card-elevated p-6 animate-slide-up">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <ChevronRight className="h-5 w-5 text-primary" />
+                  </div>
+                  <h2 className="heading-section">Plan Your Next Week's Mini-Moves</h2>
+                </div>
+                <p className="text-sm text-muted-foreground mb-1">
+                  By Sunday, please fill in your Mini-Moves for the upcoming week, ready to share with the group.
+                </p>
+                {planAheadHint && (
+                  <p className="text-xs text-primary/80 mb-4 font-medium">{planAheadHint}</p>
+                )}
+                {!planAheadHint && <div className="mb-4" />}
+
+                <div className="space-y-2 mb-4">
+                  {nextWeekMiniMoves.map(move => (
+                    <div key={move.id} className="rounded-lg border transition-all duration-200 overflow-hidden"
+                      style={{ borderColor: move.completed ? 'hsl(var(--primary) / 0.1)' : undefined }}>
+                      <div className={`flex items-center gap-3 p-2.5 ${move.completed ? 'bg-sage-light/20' : 'bg-background'}`}>
+                        <button 
+                          onClick={() => handleToggleMove(move.id, move.completed, nextWeekEntry.id)} 
+                          className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${move.completed ? 'bg-primary border-primary' : 'border-border hover:border-primary'}`}
+                        >
+                          {move.completed && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
+                        </button>
+                        {editingMoveId === move.id ? (
+                          <div className="flex-1 flex gap-2">
+                            <input type="text" value={editingMoveTitle} onChange={e => setEditingMoveTitle(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSaveEditMove(move, nextWeekEntry.id); if (e.key === 'Escape') setEditingMoveId(null); }} className="input-field flex-1 h-7 text-sm" autoFocus />
+                            <button onClick={() => handleSaveEditMove(move, nextWeekEntry.id)} className="p-1 rounded text-primary hover:bg-primary/10"><Save className="h-3.5 w-3.5" /></button>
+                            <button onClick={() => setEditingMoveId(null)} className="p-1 rounded text-muted-foreground hover:bg-muted"><X className="h-3.5 w-3.5" /></button>
+                          </div>
+                        ) : (
+                          <>
+                            <span className={`flex-1 text-sm cursor-pointer ${move.completed ? 'line-through text-muted-foreground' : ''}`} onDoubleClick={() => handleStartEditMove(move)}>{move.title}</span>
+                            <button onClick={() => handleToggleNotes(move)} className={`p-1 rounded transition-colors ${expandedMoveId === move.id ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'} ${move.notes ? 'opacity-100' : 'opacity-50 hover:opacity-100'}`} title="Notes"><Edit3 className="h-3 w-3" /></button>
+                            <button onClick={() => handleStartEditMove(move)} className="p-1 rounded text-muted-foreground opacity-50 hover:opacity-100 hover:text-foreground hover:bg-muted transition-colors" title="Edit"><Settings className="h-3 w-3" /></button>
+                            <button onClick={() => handleDeleteMove(move.id, nextWeekEntry.id)} className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"><X className="h-3.5 w-3.5" /></button>
+                          </>
+                        )}
+                      </div>
+                      {expandedMoveId === move.id && (
+                        <div className="px-3 pb-2.5 pt-1 border-t border-border/50 bg-muted/20">
+                          <textarea value={moveNotes[move.id] ?? move.notes ?? ''} onChange={e => setMoveNotes(prev => ({ ...prev, [move.id]: e.target.value }))} onBlur={() => handleSaveNotes(move, nextWeekEntry.id)} placeholder="Add notes..." className="w-full bg-transparent text-sm text-muted-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none min-h-[40px]" rows={2} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newNextWeekMoveTitle}
+                    onChange={e => setNewNextWeekMoveTitle(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && nextWeekEntry && newNextWeekMoveTitle.trim()) {
+                        addMiniMove.mutateAsync({ weeklyEntryId: nextWeekEntry.id, title: newNextWeekMoveTitle.trim() })
+                          .then(() => setNewNextWeekMoveTitle(''));
+                      }
+                    }}
+                    placeholder="Plan a mini-move for next week..."
+                    className="input-field flex-1 text-sm"
+                  />
+                  <button
+                    onClick={() => {
+                      if (nextWeekEntry && newNextWeekMoveTitle.trim()) {
+                        addMiniMove.mutateAsync({ weeklyEntryId: nextWeekEntry.id, title: newNextWeekMoveTitle.trim() })
+                          .then(() => setNewNextWeekMoveTitle(''));
+                      }
+                    }}
+                    disabled={!newNextWeekMoveTitle.trim() || addMiniMove.isPending}
+                    className="btn-primary flex items-center gap-2 text-sm"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add
+                  </button>
+                </div>
+              </section>
+            )}
 
             {/* Obstacles & Wins - Two Column Layout */}
             <div className="grid md:grid-cols-2 gap-6">
