@@ -182,12 +182,17 @@ export default function Resources() {
   };
 
   const handleDownload = async (filePath: string, fileName: string) => {
-    const { data } = supabase.storage
+    const { data, error } = await supabase.storage
       .from("resources")
-      .getPublicUrl(filePath);
+      .createSignedUrl(filePath, 60);
+
+    if (error || !data?.signedUrl) {
+      toast.error("Could not generate download link.");
+      return;
+    }
 
     const link = document.createElement("a");
-    link.href = data.publicUrl;
+    link.href = data.signedUrl;
     link.download = fileName;
     link.target = "_blank";
     document.body.appendChild(link);
