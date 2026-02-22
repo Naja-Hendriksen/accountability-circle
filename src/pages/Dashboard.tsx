@@ -274,6 +274,9 @@ export default function Dashboard() {
               ...p,
               growth_goal: v
             }))} placeholder="What's the big picture? E.g., 'Launch my online course and reach 100 students by Q4'" multiline />
+                {profile?.updated_at && formData.growth_goal && (
+                  <p className="text-xs text-muted-foreground/60 mt-2">Edited on {format(new Date(profile.updated_at), 'MMM d, yyyy')}</p>
+                )}
               </section>
 
               {/* Monthly Milestones */}
@@ -290,6 +293,9 @@ export default function Dashboard() {
               ...p,
               monthly_milestones: v
             }))} placeholder="What specific milestones will move you toward your goal this month?" multiline />
+                {profile?.updated_at && formData.monthly_milestones && (
+                  <p className="text-xs text-muted-foreground/60 mt-2">Edited on {format(new Date(profile.updated_at), 'MMM d, yyyy')}</p>
+                )}
               </section>
             </div>
 
