@@ -224,6 +224,19 @@ function MemberCard({ member, currentWeekDates, previousWeekDates, delay }: Memb
             <h3 className="font-display text-xl font-semibold text-foreground truncate">
               {profile.name || 'Unnamed Member'}
             </h3>
+            {profile.business_name && (
+              <p className="text-sm text-muted-foreground truncate">{profile.business_name}</p>
+            )}
+            {profile.business_website && (
+              <a 
+                href={profile.business_website.startsWith('http') ? profile.business_website : `https://${profile.business_website}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline truncate block"
+              >
+                {profile.business_website}
+              </a>
+            )}
           </div>
         </div>
 
