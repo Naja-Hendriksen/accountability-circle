@@ -1,0 +1,1 @@
+ALTER TABLE public.mini_moves ADD COLUMN carried_forward boolean NOT NULL DEFAULT false;
