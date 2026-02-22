@@ -683,7 +683,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="flex flex-col items-center gap-2 rounded-lg border border-border/50 bg-muted/20 p-4">
+                      <div className="flex flex-col items-center gap-2 p-4">
                         <AvatarUpload currentAvatarUrl={profile?.avatar_url || null} name={profile?.name || ''} onUploadComplete={async url => {
                       await updateProfile.mutateAsync({ avatar_url: url });
                     }} onRemove={async () => {
