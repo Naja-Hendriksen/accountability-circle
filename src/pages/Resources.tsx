@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FileDown, Upload, Trash2, FileText, Info, ExternalLink, Plus } from "lucide-react";
+import { FileDown, Upload, Trash2, FileText, Info, ExternalLink, Plus, Pencil, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -140,6 +140,27 @@ export default function Resources() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, title, description, external_link }: { id: string; title: string; description: string | null; external_link: string | null }) => {
+      const { error } = await supabase
+        .from("resources")
+        .update({ title, description, external_link })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Resource updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["resources"] });
+    },
+    onError: () => {
+      toast.error("Failed to update resource");
+    },
+  });
+
+  const handleUpdate = (id: string, title: string, description: string | null, external_link: string | null) => {
+    updateMutation.mutate({ id, title, description, external_link });
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -216,6 +237,7 @@ export default function Resources() {
                     isAdmin={!!isAdmin}
                     onDownload={handleDownload}
                     onDelete={(r) => deleteMutation.mutate(r)}
+                    onUpdate={handleUpdate}
                     isDeleting={deleteMutation.isPending}
                     formatFileSize={formatFileSize}
                   />
@@ -329,6 +351,7 @@ function ResourceItem({
   isAdmin,
   onDownload,
   onDelete,
+  onUpdate,
   isDeleting,
   formatFileSize,
 }: {
@@ -336,10 +359,83 @@ function ResourceItem({
   isAdmin: boolean;
   onDownload: (filePath: string, fileName: string) => void;
   onDelete: (resource: Resource) => void;
+  onUpdate: (id: string, title: string, description: string | null, external_link: string | null) => void;
   isDeleting: boolean;
   formatFileSize: (bytes: number) => string;
 }) {
   const isInfo = resource.resource_type === "info";
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: resource.title,
+    description: resource.description || "",
+    external_link: resource.external_link || "",
+  });
+
+  const handleSave = () => {
+    if (!editForm.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    onUpdate(
+      resource.id,
+      editForm.title.trim(),
+      editForm.description.trim() || null,
+      editForm.external_link.trim() || null
+    );
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditForm({
+      title: resource.title,
+      description: resource.description || "",
+      external_link: resource.external_link || "",
+    });
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div className="p-4 rounded-lg border bg-card space-y-3">
+        <div className="space-y-2">
+          <Label>Title</Label>
+          <Input
+            value={editForm.title}
+            onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Description</Label>
+          <Textarea
+            value={editForm.description}
+            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+            rows={3}
+          />
+        </div>
+        {isInfo && (
+          <div className="space-y-2">
+            <Label>External Link</Label>
+            <Input
+              type="url"
+              value={editForm.external_link}
+              onChange={(e) => setEditForm({ ...editForm, external_link: e.target.value })}
+              placeholder="https://example.com"
+            />
+          </div>
+        )}
+        <div className="flex gap-2">
+          <Button size="sm" onClick={handleSave}>
+            <Check className="h-4 w-4 mr-1" />
+            Save
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleCancel}>
+            <X className="h-4 w-4 mr-1" />
+            Cancel
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-start justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
@@ -390,14 +486,23 @@ function ResourceItem({
           </Button>
         )}
         {isAdmin && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(resource)}
-            disabled={isDeleting}
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditing(true)}
+            >
+              <Pencil className="h-4 w-4 text-muted-foreground" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(resource)}
+              disabled={isDeleting}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </>
         )}
       </div>
     </div>
