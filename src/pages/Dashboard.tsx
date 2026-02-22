@@ -750,11 +750,21 @@ interface HistoricalWeekMovesProps {
 }
 function HistoricalWeekMoves({ entry }: HistoricalWeekMovesProps) {
   const { data: moves = [] } = useMiniMoves(entry.id);
+  const toggleMove = useToggleMiniMove();
+  const { toast } = useToast();
   
   if (moves.length === 0) return null;
   
   const completedCount = moves.filter(m => m.completed).length;
   const weekDate = new Date(entry.week_start);
+
+  const handleToggle = async (move: MiniMove) => {
+    try {
+      await toggleMove.mutateAsync({ id: move.id, completed: !move.completed, weeklyEntryId: entry.id });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
   
   return (
     <div className="p-4 rounded-lg bg-muted/20 border border-border/50">
@@ -778,12 +788,15 @@ function HistoricalWeekMoves({ entry }: HistoricalWeekMovesProps) {
               ${move.completed ? 'text-muted-foreground' : 'text-foreground'}
             `}
           >
-            <div className={`
-              flex-shrink-0 w-4 h-4 rounded-full border flex items-center justify-center
-              ${move.completed ? 'bg-primary/20 border-primary/30' : 'border-muted-foreground/30'}
-            `}>
+            <button
+              onClick={() => handleToggle(move)}
+              className={`
+                flex-shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-all duration-200 cursor-pointer
+                ${move.completed ? 'bg-primary/20 border-primary/30 hover:bg-primary/30' : 'border-muted-foreground/30 hover:border-primary'}
+              `}
+            >
               {move.completed && <Check className="h-2.5 w-2.5 text-primary" />}
-            </div>
+            </button>
             <span className={move.completed ? 'line-through' : ''}>
               {move.title}
             </span>
