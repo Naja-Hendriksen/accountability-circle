@@ -682,35 +682,18 @@ export default function Dashboard() {
                       <h3 className="font-semibold text-lg">Your Profile</h3>
                     </div>
 
-                    <div className="flex items-start gap-6">
-                      <div className="flex flex-col items-center gap-2 pt-1">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex flex-col items-center gap-2 rounded-lg border border-border/50 bg-muted/20 p-4">
                         <AvatarUpload currentAvatarUrl={profile?.avatar_url || null} name={profile?.name || ''} onUploadComplete={async url => {
-                      await updateProfile.mutateAsync({
-                        avatar_url: url
-                      });
+                      await updateProfile.mutateAsync({ avatar_url: url });
                     }} onRemove={async () => {
-                      await updateProfile.mutateAsync({
-                        avatar_url: null
-                      });
+                      await updateProfile.mutateAsync({ avatar_url: null });
                     }} size="md" />
                         <span className="text-xs text-muted-foreground">Click to change</span>
                       </div>
-                      <div className="flex-1 space-y-4">
-                        <EditableField label="Display Name" icon={<User className="h-4 w-4 text-muted-foreground" />} value={formData.name} isEditing={editingSection === 'name'} onEdit={() => setEditingSection('name')} onSave={() => saveProfileField('name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
-                      ...p,
-                      name: v
-                    }))} placeholder="Enter your name" compact />
-                        <div className="border-t border-border/50" />
-                        <EditableField label="Business Name" icon={<Briefcase className="h-4 w-4 text-muted-foreground" />} value={formData.business_name} isEditing={editingSection === 'business_name'} onEdit={() => setEditingSection('business_name')} onSave={() => saveProfileField('business_name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
-                      ...p,
-                      business_name: v
-                    }))} placeholder="Enter your business name" compact />
-                        <div className="border-t border-border/50" />
-                        <EditableField label="Business Website" icon={<Globe className="h-4 w-4 text-muted-foreground" />} value={formData.business_website} isEditing={editingSection === 'business_website'} onEdit={() => setEditingSection('business_website')} onSave={() => saveProfileField('business_website')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
-                      ...p,
-                      business_website: v
-                    }))} placeholder="https://yourbusiness.com" compact />
-                      </div>
+                      <EditableField label="Display Name" icon={<User className="h-4 w-4 text-muted-foreground" />} value={formData.name} isEditing={editingSection === 'name'} onEdit={() => setEditingSection('name')} onSave={() => saveProfileField('name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({ ...p, name: v }))} placeholder="Enter your name" compact />
+                      <EditableField label="Business Name" icon={<Briefcase className="h-4 w-4 text-muted-foreground" />} value={formData.business_name} isEditing={editingSection === 'business_name'} onEdit={() => setEditingSection('business_name')} onSave={() => saveProfileField('business_name')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({ ...p, business_name: v }))} placeholder="Enter your business name" compact />
+                      <EditableField label="Business Website" icon={<Globe className="h-4 w-4 text-muted-foreground" />} value={formData.business_website} isEditing={editingSection === 'business_website'} onEdit={() => setEditingSection('business_website')} onSave={() => saveProfileField('business_website')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({ ...p, business_website: v }))} placeholder="https://yourbusiness.com" compact />
                     </div>
                   </div>
 
