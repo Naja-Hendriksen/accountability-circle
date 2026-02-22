@@ -12,6 +12,7 @@ import AvatarUpload from '@/components/AvatarUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import CelebrationPopup from '@/components/CelebrationPopup';
 export default function Dashboard() {
   const {
     user,
@@ -242,13 +243,16 @@ export default function Dashboard() {
   return <AppLayout>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         {/* Header */}
-        <div className="mb-10 animate-fade-in">
-          <h1 className="heading-display text-foreground mb-2">
-            Welcome back{profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}
-          </h1>
-          <p className="text-body text-muted-foreground">
-            Week of {format(weekStart, 'MMM d')} – {format(weekEnd, 'MMM d, yyyy')}
-          </p>
+        <div className="mb-10 animate-fade-in flex items-start justify-between gap-4">
+          <div>
+            <h1 className="heading-display text-foreground mb-2">
+              Welcome back{profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}
+            </h1>
+            <p className="text-body text-muted-foreground">
+              Week of {format(weekStart, 'MMM d')} – {format(weekEnd, 'MMM d, yyyy')}
+            </p>
+          </div>
+          <CelebrationPopup />
         </div>
 
         {isLoading ? <div className="flex items-center justify-center py-20">
