@@ -364,8 +364,14 @@ function ResourceItem({
               href={resource.external_link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-1.5"
+              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline mt-1.5"
             >
+              <img
+                src={`https://www.google.com/s2/favicons?domain=${new URL(resource.external_link).hostname}&sz=32`}
+                alt=""
+                className="h-4 w-4 rounded-sm"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
               <ExternalLink className="h-3.5 w-3.5" />
               Visit link
             </a>
