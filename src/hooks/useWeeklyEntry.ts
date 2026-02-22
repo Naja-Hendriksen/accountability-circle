@@ -19,6 +19,7 @@ export interface MiniMove {
   weekly_entry_id: string;
   user_id: string;
   title: string;
+  notes: string | null;
   completed: boolean;
   created_at: string;
   updated_at: string;
@@ -257,6 +258,25 @@ export function useDeleteMiniMove() {
       const { error } = await supabase
         .from('mini_moves')
         .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return { weeklyEntryId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['miniMoves', data.weeklyEntryId] });
+    },
+  });
+}
+
+export function useUpdateMiniMove() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, updates, weeklyEntryId }: { id: string; updates: { title?: string; notes?: string }; weeklyEntryId: string }) => {
+      const { error } = await supabase
+        .from('mini_moves')
+        .update(updates)
         .eq('id', id);
 
       if (error) throw error;
