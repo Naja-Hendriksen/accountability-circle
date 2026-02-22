@@ -83,19 +83,43 @@ export default function CelebrationPopup() {
 
   // Fire confetti when dialog opens with moves
   const confettiFired = useRef(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
     if (open && moves.length > 0 && !confettiFired.current) {
       confettiFired.current = true;
-      // Initial burst
+
+      // Create a canvas above the dialog overlay (z-50)
+      const canvas = document.createElement('canvas');
+      canvas.style.position = 'fixed';
+      canvas.style.inset = '0';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.zIndex = '9999';
+      canvas.style.pointerEvents = 'none';
+      document.body.appendChild(canvas);
+      canvasRef.current = canvas;
+
+      const myConfetti = confetti.create(canvas, { resize: true });
+
       const fire = (options: confetti.Options) => {
-        confetti({ ...options, disableForReducedMotion: true });
+        myConfetti({ ...options, disableForReducedMotion: true });
       };
       fire({ particleCount: 80, spread: 100, origin: { y: 0.6 }, startVelocity: 30 });
       setTimeout(() => fire({ particleCount: 50, spread: 120, origin: { x: 0.3, y: 0.5 }, startVelocity: 25 }), 250);
       setTimeout(() => fire({ particleCount: 50, spread: 120, origin: { x: 0.7, y: 0.5 }, startVelocity: 25 }), 500);
+
+      // Remove canvas after animations finish
+      setTimeout(() => {
+        canvas.remove();
+        canvasRef.current = null;
+      }, 4000);
     }
     if (!open) {
       confettiFired.current = false;
+      if (canvasRef.current) {
+        canvasRef.current.remove();
+        canvasRef.current = null;
+      }
     }
   }, [open, moves.length]);
 
@@ -114,31 +138,12 @@ export default function CelebrationPopup() {
     return () => clearInterval(interval);
   }, [open, moves.length]);
 
-  // Manual trigger button
-  const handleManualOpen = async () => {
-    const completions = await fetchPrevMonthCompletions();
-    setMoves(completions);
-    setCurrentIndex(0);
-    setAnimating(false);
-    setOpen(true);
-  };
-
   if (!user) return null;
 
   return (
-    <>
-      <button
-        onClick={handleManualOpen}
-        className="btn-primary flex items-center gap-2 text-sm"
-        title="Celebrate last month's accomplishments!"
-      >
-        <PartyPopper className="h-4 w-4" />
-        Celebrate
-      </button>
-
-      <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
-        <DialogContent className="sm:max-w-md text-center overflow-hidden">
-          <DialogTitle className="sr-only">Monthly Celebration</DialogTitle>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
+      <DialogContent className="sm:max-w-md text-center overflow-hidden">
+        <DialogTitle className="sr-only">Monthly Celebration</DialogTitle>
 
           {moves.length === 0 ? (
             <div className="py-8 space-y-4">
@@ -207,8 +212,7 @@ export default function CelebrationPopup() {
               </button>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-    </>
+      </DialogContent>
+    </Dialog>
   );
 }
