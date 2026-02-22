@@ -214,7 +214,7 @@ function MemberCard({ member, currentWeekDates, previousWeekDates, delay }: Memb
       {/* Member header */}
       <div className="p-6 border-b border-border/50">
         <div className="flex items-start gap-4">
-          <Avatar className="h-18 w-18 border-2 border-border flex-shrink-0">
+          <Avatar className="h-16 w-16 border-2 border-border flex-shrink-0">
             <AvatarImage src={profile.avatar_url || undefined} alt={profile.name} />
             <AvatarFallback className="bg-sage-light text-primary font-display font-semibold text-xl">
               {(profile.name || '?')[0].toUpperCase()}
