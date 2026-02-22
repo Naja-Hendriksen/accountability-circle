@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Trophy, PartyPopper, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { startOfMonth, subMonths, endOfMonth, format } from 'date-fns';
+import confetti from 'canvas-confetti';
 
 interface CompletedMove {
   id: string;
@@ -79,6 +80,24 @@ export default function CelebrationPopup() {
     localStorage.setItem(storageKey, currentMonthKey);
     setOpen(false);
   };
+
+  // Fire confetti when dialog opens with moves
+  const confettiFired = useRef(false);
+  useEffect(() => {
+    if (open && moves.length > 0 && !confettiFired.current) {
+      confettiFired.current = true;
+      // Initial burst
+      const fire = (options: confetti.Options) => {
+        confetti({ ...options, disableForReducedMotion: true });
+      };
+      fire({ particleCount: 80, spread: 100, origin: { y: 0.6 }, startVelocity: 30 });
+      setTimeout(() => fire({ particleCount: 50, spread: 120, origin: { x: 0.3, y: 0.5 }, startVelocity: 25 }), 250);
+      setTimeout(() => fire({ particleCount: 50, spread: 120, origin: { x: 0.7, y: 0.5 }, startVelocity: 25 }), 500);
+    }
+    if (!open) {
+      confettiFired.current = false;
+    }
+  }, [open, moves.length]);
 
   // Auto-advance the rolling list
   useEffect(() => {
