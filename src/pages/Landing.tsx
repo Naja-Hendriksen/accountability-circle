@@ -93,28 +93,6 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Ready to Make 2026 Your Year */}
-      <section className="py-[20px]">
-        <div className="container mx-auto px-0 py-[20px]">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-display font-light mb-6">
-              Ready to Make 2026 Your Year?
-            </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Join a circle of ambitious, supportive women who are committed to growing together.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-lg px-8 py-6 h-auto" asChild>
-                <Link to="/apply">Apply to Join the Circle</Link>
-              </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 h-auto" asChild>
-                <Link to="/auth">Already a Member? Sign In</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* What to Expect */}
       <section className="bg-muted/30 py-[32px]">
         <div className="container mx-auto px-6">
@@ -302,6 +280,28 @@ const Landing = () => {
                   </ul>
                 </CardContent>
               </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Ready to Make 2026 Your Year */}
+      <section className="py-[20px]">
+        <div className="container mx-auto px-0 py-[20px]">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-display font-light mb-6">
+              Ready to Make 2026 Your Year?
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              Join a circle of ambitious, supportive women who are committed to growing together.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="text-lg px-8 py-6 h-auto" asChild>
+                <Link to="/apply">Apply to Join the Circle</Link>
+              </Button>
+              <Button variant="outline" size="lg" className="text-lg px-8 py-6 h-auto" asChild>
+                <Link to="/auth">Already a Member? Sign In</Link>
+              </Button>
             </div>
           </div>
         </div>
