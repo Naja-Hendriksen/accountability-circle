@@ -155,7 +155,7 @@ const Landing = () => {
                       <item.icon className="w-6 h-6 text-primary" />
                     </div>
                     <h3 className="font-display font-medium mb-2 text-2xl">{item.title}</h3>
-                    <p className="text-muted-foreground text-lg">{item.description}</p>
+                    <p className="text-muted-foreground text-lg px-[10px]">{item.description}</p>
                   </CardContent>
                 </Card>
               )}
