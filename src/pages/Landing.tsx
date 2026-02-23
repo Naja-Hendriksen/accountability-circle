@@ -58,10 +58,13 @@ const Landing = () => {
                 everyone gets a chance to share.
               </p>
             </div>
-            <div className="mt-12">
+            <div className="mt-12 flex flex-col items-center gap-4">
               <Button size="lg" className="text-lg px-8 py-6 h-auto" asChild>
                 <Link to="/apply">Apply to Join the Circle</Link>
               </Button>
+              <Link to="/preview" className="text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-4 decoration-muted-foreground/30 hover:decoration-primary/50">
+                See what the member dashboard looks like →
+              </Link>
             </div>
           </div>
         </div>
