@@ -277,3 +277,16 @@
     opacity: 0;
   }
 }
+
+@keyframes starburst-fly {
+  0% {
+    opacity: 1;
+    left: inherit;
+    top: inherit;
+  }
+  100% {
+    opacity: 0;
+    left: var(--target-x);
+    top: var(--target-y);
+  }
+}
