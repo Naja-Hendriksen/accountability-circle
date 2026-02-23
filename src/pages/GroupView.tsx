@@ -266,51 +266,6 @@ function MemberCard({ member, currentWeekDates, previousWeekDates, delay }: Memb
             </div>
           </div>
         )}
-
-        {/* Obstacles, Wins & Self-Care - always visible */}
-        {(profile.obstacles || currentWeek?.wins || currentWeek?.self_care) && (
-          <div className="mt-4 space-y-3">
-            {(profile.obstacles || currentWeek?.wins) && (
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="p-3 rounded-lg bg-muted/50 border border-border">
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      Obstacles
-                    </span>
-                  </div>
-                  <p className="text-sm text-foreground">
-                    {profile.obstacles || <span className="italic text-muted-foreground">None shared</span>}
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-lg bg-terracotta-light/30 border border-accent/10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="h-4 w-4 text-accent" />
-                    <span className="text-xs font-medium uppercase tracking-wide text-accent">
-                      Wins
-                    </span>
-                  </div>
-                  <p className="text-sm text-foreground">
-                    {currentWeek?.wins || <span className="italic text-muted-foreground">None shared</span>}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {currentWeek?.self_care && (
-              <div className="p-3 rounded-lg bg-secondary border border-secondary">
-                <div className="flex items-center gap-2 mb-2">
-                  <Heart className="h-4 w-4 text-accent" />
-                  <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Self-Care
-                  </span>
-                </div>
-                <p className="text-sm text-foreground">{currentWeek.self_care}</p>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Weekly sections */}
@@ -342,6 +297,51 @@ function MemberCard({ member, currentWeekDates, previousWeekDates, delay }: Memb
           onToggle={() => setExpandedWeek(expandedWeek === 'previous' ? null : 'previous')}
         />
       </div>
+
+      {/* Obstacles, Wins & Self-Care - always visible, below weeks */}
+      {(profile.obstacles || currentWeek?.wins || currentWeek?.self_care) && (
+        <div className="p-6 border-t border-border/50 space-y-3">
+          {(profile.obstacles || currentWeek?.wins) && (
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Obstacles
+                  </span>
+                </div>
+                <p className="text-sm text-foreground">
+                  {profile.obstacles || <span className="italic text-muted-foreground">None shared</span>}
+                </p>
+              </div>
+
+              <div className="p-3 rounded-lg bg-terracotta-light/30 border border-accent/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Trophy className="h-4 w-4 text-accent" />
+                  <span className="text-xs font-medium uppercase tracking-wide text-accent">
+                    Wins
+                  </span>
+                </div>
+                <p className="text-sm text-foreground">
+                  {currentWeek?.wins || <span className="italic text-muted-foreground">None shared</span>}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {currentWeek?.self_care && (
+            <div className="p-3 rounded-lg bg-secondary border border-secondary">
+              <div className="flex items-center gap-2 mb-2">
+                <Heart className="h-4 w-4 text-accent" />
+                <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Self-Care
+                </span>
+              </div>
+              <p className="text-sm text-foreground">{currentWeek.self_care}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
