@@ -180,7 +180,7 @@ const Landing = () => {
 
             <div className="mt-12 text-center">
               <Button size="lg" className="text-lg px-8 py-6 h-auto" asChild>
-                <Link to="/preview">See What the Member Dashboard Looks Like →</Link>
+                <Link to="/preview">See What Your Member Dashboard Looks Like →</Link>
               </Button>
             </div>
           </div>
