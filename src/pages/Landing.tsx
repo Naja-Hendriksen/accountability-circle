@@ -29,7 +29,7 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-20">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        <div className="container mx-auto px-6 py-20 md:py-24 relative">
+        <div className="container mx-auto px-6 py-16 md:py-20 relative">
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-primary font-medium tracking-widest uppercase mb-4">
               Women's Digital Creators
@@ -68,7 +68,7 @@ const Landing = () => {
       </section>
 
       {/* You're Invited (formerly Meet Your Facilitator) */}
-      <section className="py-12 bg-muted/30">
+      <section className="py-8 bg-muted/30">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-display font-light text-center mb-12">
