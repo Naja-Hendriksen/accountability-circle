@@ -22,6 +22,7 @@ export interface MiniMove {
   notes: string | null;
   completed: boolean;
   carried_forward: boolean;
+  scheduled_day: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -318,7 +319,7 @@ export function useUpdateMiniMove() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, updates, weeklyEntryId }: { id: string; updates: { title?: string; notes?: string }; weeklyEntryId: string }) => {
+    mutationFn: async ({ id, updates, weeklyEntryId }: { id: string; updates: { title?: string; notes?: string; scheduled_day?: number | null }; weeklyEntryId: string }) => {
       const { error } = await supabase
         .from('mini_moves')
         .update(updates)

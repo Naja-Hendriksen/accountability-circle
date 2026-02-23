@@ -81,6 +81,7 @@ export default function Dashboard() {
   const [expandedMoveId, setExpandedMoveId] = useState<string | null>(null);
   const [moveNotes, setMoveNotes] = useState<Record<string, string>>({});
   const [starBurst, setStarBurst] = useState<{ x: number; y: number } | null>(null);
+  const [dayPickerMoveId, setDayPickerMoveId] = useState<string | null>(null);
 
   // Sync form data with loaded data
   useEffect(() => {
@@ -302,6 +303,23 @@ export default function Dashboard() {
     weekStartsOn: 1
   });
 
+  const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  const handleSetDay = async (move: MiniMove, day: number | null, entryId?: string) => {
+    const targetEntryId = entryId || weeklyEntry?.id;
+    if (!targetEntryId) return;
+    const newDay = move.scheduled_day === day ? null : day;
+    try {
+      await updateMiniMove.mutateAsync({
+        id: move.id,
+        updates: { scheduled_day: newDay },
+        weeklyEntryId: targetEntryId,
+      });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
   // Contextual hint based on day of week
   const today = new Date().getDay(); // 0=Sun, 1=Mon, ...
   const getPlanAheadHint = () => {
@@ -449,6 +467,18 @@ export default function Dashboard() {
                                         <span className="ml-2 inline-flex items-center text-[10px] font-medium text-muted-foreground/70 bg-muted/50 px-1.5 py-0.5 rounded-full leading-none">↩ carried over</span>
                                       )}
                                     </span>
+                                    {/* Day label - subtle badge or tap target */}
+                                    <button
+                                      onClick={() => setDayPickerMoveId(dayPickerMoveId === move.id ? null : move.id)}
+                                      className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-all duration-200 leading-none ${
+                                        move.scheduled_day != null
+                                          ? 'text-primary/70 bg-primary/8 hover:bg-primary/15'
+                                          : 'text-muted-foreground/30 hover:text-muted-foreground/60 hover:bg-muted/50'
+                                      }`}
+                                      title="Set day"
+                                    >
+                                      {move.scheduled_day != null ? DAY_LABELS[move.scheduled_day] : '···'}
+                                    </button>
                                     <button onClick={() => handleToggleNotes(move)} className={`p-1 rounded transition-colors ${expandedMoveId === move.id ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'} ${move.notes ? 'opacity-100' : 'opacity-50 hover:opacity-100'}`} title="Notes">
                                       <Edit3 className="h-3.5 w-3.5" />
                                     </button>
@@ -471,6 +501,31 @@ export default function Dashboard() {
                                     className="w-full bg-transparent text-sm text-muted-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none min-h-[48px]"
                                     rows={2}
                                   />
+                                </div>
+                              )}
+                              {dayPickerMoveId === move.id && (
+                                <div className="px-3 pb-2 pt-1.5 border-t border-border/30 bg-muted/10 flex gap-1 flex-wrap">
+                                  {DAY_LABELS.map((label, i) => (
+                                    <button
+                                      key={i}
+                                      onClick={() => { handleSetDay(move, i); setDayPickerMoveId(null); }}
+                                      className={`px-2 py-1 rounded text-xs font-medium transition-all duration-150 ${
+                                        move.scheduled_day === i
+                                          ? 'bg-primary/15 text-primary'
+                                          : 'text-muted-foreground/60 hover:text-foreground hover:bg-muted/60'
+                                      }`}
+                                    >
+                                      {label}
+                                    </button>
+                                  ))}
+                                  {move.scheduled_day != null && (
+                                    <button
+                                      onClick={() => { handleSetDay(move, move.scheduled_day); setDayPickerMoveId(null); }}
+                                      className="px-2 py-1 rounded text-xs text-muted-foreground/40 hover:text-destructive/60 transition-colors"
+                                    >
+                                      Clear
+                                    </button>
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -596,6 +651,17 @@ export default function Dashboard() {
                         ) : (
                           <>
                             <span className={`flex-1 text-sm cursor-pointer ${move.completed ? 'line-through text-muted-foreground' : ''}`} onDoubleClick={() => handleStartEditMove(move)}>{move.title}</span>
+                            <button
+                              onClick={() => setDayPickerMoveId(dayPickerMoveId === move.id ? null : move.id)}
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-all duration-200 leading-none ${
+                                move.scheduled_day != null
+                                  ? 'text-primary/70 bg-primary/8 hover:bg-primary/15'
+                                  : 'text-muted-foreground/30 hover:text-muted-foreground/60 hover:bg-muted/50'
+                              }`}
+                              title="Set day"
+                            >
+                              {move.scheduled_day != null ? DAY_LABELS[move.scheduled_day] : '···'}
+                            </button>
                             <button onClick={() => handleToggleNotes(move)} className={`p-1 rounded transition-colors ${expandedMoveId === move.id ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'} ${move.notes ? 'opacity-100' : 'opacity-50 hover:opacity-100'}`} title="Notes"><Edit3 className="h-3 w-3" /></button>
                             <button onClick={() => handleStartEditMove(move)} className="p-1 rounded text-muted-foreground opacity-50 hover:opacity-100 hover:text-foreground hover:bg-muted transition-colors" title="Edit"><Settings className="h-3 w-3" /></button>
                             <button onClick={() => handleDeleteMove(move.id, nextWeekEntry.id)} className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"><X className="h-3.5 w-3.5" /></button>
@@ -605,6 +671,31 @@ export default function Dashboard() {
                       {expandedMoveId === move.id && (
                         <div className="px-3 pb-2.5 pt-1 border-t border-border/50 bg-muted/20">
                           <textarea value={moveNotes[move.id] ?? move.notes ?? ''} onChange={e => setMoveNotes(prev => ({ ...prev, [move.id]: e.target.value }))} onBlur={() => handleSaveNotes(move, nextWeekEntry.id)} placeholder="Add notes..." className="w-full bg-transparent text-sm text-muted-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none min-h-[40px]" rows={2} />
+                        </div>
+                      )}
+                      {dayPickerMoveId === move.id && (
+                        <div className="px-3 pb-2 pt-1.5 border-t border-border/30 bg-muted/10 flex gap-1 flex-wrap">
+                          {DAY_LABELS.map((label, i) => (
+                            <button
+                              key={i}
+                              onClick={() => { handleSetDay(move, i, nextWeekEntry.id); setDayPickerMoveId(null); }}
+                              className={`px-2 py-1 rounded text-xs font-medium transition-all duration-150 ${
+                                move.scheduled_day === i
+                                  ? 'bg-primary/15 text-primary'
+                                  : 'text-muted-foreground/60 hover:text-foreground hover:bg-muted/60'
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                          {move.scheduled_day != null && (
+                            <button
+                              onClick={() => { handleSetDay(move, move.scheduled_day); setDayPickerMoveId(null); }}
+                              className="px-2 py-1 rounded text-xs text-muted-foreground/40 hover:text-destructive/60 transition-colors"
+                            >
+                              Clear
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
