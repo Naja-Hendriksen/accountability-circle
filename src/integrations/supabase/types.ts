@@ -516,6 +516,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          sort_order: number
           title: string
           updated_at: string
           user_id: string
@@ -527,6 +528,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          sort_order?: number
           title: string
           updated_at?: string
           user_id: string
@@ -538,6 +540,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          sort_order?: number
           title?: string
           updated_at?: string
           user_id?: string

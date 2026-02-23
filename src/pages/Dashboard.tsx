@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth';
 import AppLayout from '@/components/layout/AppLayout';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
-import { useCurrentWeekEntry, useUpdateWeeklyEntry, useMiniMoves, useAddMiniMove, useToggleMiniMove, useDeleteMiniMove, useUpdateMiniMove, useAllWeeklyEntries, usePreviousWeekEntry, useNextWeekEntry, isWeekEditable, WeeklyEntry, MiniMove } from '@/hooks/useWeeklyEntry';
-import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown, ChevronRight, Mail, Bell, BellOff, History, Eye, User, Briefcase, Globe } from 'lucide-react';
+import { useCurrentWeekEntry, useUpdateWeeklyEntry, useMiniMoves, useAddMiniMove, useToggleMiniMove, useDeleteMiniMove, useUpdateMiniMove, useReorderMiniMoves, useAllWeeklyEntries, usePreviousWeekEntry, useNextWeekEntry, isWeekEditable, WeeklyEntry, MiniMove } from '@/hooks/useWeeklyEntry';
+import { Loader2, Target, Calendar, Sparkles, AlertCircle, Trophy, Heart, Plus, Check, X, Edit3, Save, Trash2, Settings, ChevronDown, ChevronRight, Mail, Bell, BellOff, History, Eye, User, Briefcase, Globe, GripVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
 import AvatarUpload from '@/components/AvatarUpload';
@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import CelebrationPopup from '@/components/CelebrationPopup';
 import { StarBurst } from '@/components/StarBurst';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 export default function Dashboard() {
   const {
     user,
@@ -54,6 +55,7 @@ export default function Dashboard() {
   const toggleMiniMove = useToggleMiniMove();
   const deleteMiniMove = useDeleteMiniMove();
   const updateMiniMove = useUpdateMiniMove();
+  const reorderMiniMoves = useReorderMiniMoves();
 
   // Local state for editing
   const [editingSection, setEditingSection] = useState<string | null>(null);
@@ -221,6 +223,18 @@ export default function Dashboard() {
       });
     }
   };
+  const handleDragEnd = (result: DropResult, moves: MiniMove[], entryId?: string) => {
+    if (!result.destination || result.source.index === result.destination.index) return;
+    const targetEntryId = entryId || weeklyEntry?.id;
+    if (!targetEntryId) return;
+
+    const reordered = Array.from(moves);
+    const [removed] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, removed);
+
+    const updates = reordered.map((m, i) => ({ id: m.id, sort_order: i }));
+    reorderMiniMoves.mutate({ reorderedMoves: updates, weeklyEntryId: targetEntryId });
+  };
   const handleDeleteMove = async (id: string, entryId?: string) => {
     const targetEntryId = entryId || weeklyEntry?.id;
     if (!targetEntryId) return;
@@ -383,73 +397,91 @@ export default function Dashboard() {
                 </div>}
 
               {/* Mini moves list */}
-              <div className="space-y-3 mb-4">
-                {miniMoves.map(move => (
-                  <div key={move.id} className="rounded-lg border transition-all duration-200 overflow-hidden"
-                    style={{ borderColor: move.completed ? 'hsl(var(--primary) / 0.2)' : undefined }}>
-                    <div className={`flex items-center gap-3 p-3 ${move.completed ? 'bg-sage-light/30' : 'bg-background'}`}>
-                      <button onClick={(e) => handleToggleMove(move.id, move.completed, undefined, e)} className={`
-                          flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center
-                          transition-all duration-200
-                          ${move.completed ? 'bg-primary border-primary' : 'border-border hover:border-primary'}
-                        `}>
-                        {move.completed && <Check className="h-3 w-3 text-primary-foreground" />}
-                      </button>
-                      {editingMoveId === move.id ? (
-                        <div className="flex-1 flex gap-2">
-                          <input
-                            type="text"
-                            value={editingMoveTitle}
-                            onChange={e => setEditingMoveTitle(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') handleSaveEditMove(move); if (e.key === 'Escape') setEditingMoveId(null); }}
-                            className="input-field flex-1 h-8 text-sm"
-                            autoFocus
-                          />
-                          <button onClick={() => handleSaveEditMove(move)} className="p-1 rounded text-primary hover:bg-primary/10 transition-colors">
-                            <Save className="h-4 w-4" />
-                          </button>
-                          <button onClick={() => setEditingMoveId(null)} className="p-1 rounded text-muted-foreground hover:bg-muted transition-colors">
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <span
-                            className={`flex-1 cursor-pointer ${move.completed ? 'line-through text-muted-foreground' : ''}`}
-                            onDoubleClick={() => handleStartEditMove(move)}
-                          >
-                            {move.title}
-                            {move.carried_forward && (
-                              <span className="ml-2 inline-flex items-center text-[10px] font-medium text-muted-foreground/70 bg-muted/50 px-1.5 py-0.5 rounded-full leading-none">↩ carried over</span>
-                            )}
-                          </span>
-                          <button onClick={() => handleToggleNotes(move)} className={`p-1 rounded transition-colors ${expandedMoveId === move.id ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'} ${move.notes ? 'opacity-100' : 'opacity-50 hover:opacity-100'}`} title="Notes">
-                            <Edit3 className="h-3.5 w-3.5" />
-                          </button>
-                          <button onClick={() => handleStartEditMove(move)} className="p-1 rounded text-muted-foreground opacity-50 hover:opacity-100 hover:text-foreground hover:bg-muted transition-colors" title="Edit title">
-                            <Settings className="h-3.5 w-3.5" />
-                          </button>
-                          <button onClick={() => handleDeleteMove(move.id)} className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                            <X className="h-4 w-4" />
-                          </button>
-                        </>
-                      )}
+              <DragDropContext onDragEnd={(result) => handleDragEnd(result, miniMoves)}>
+                <Droppable droppableId="current-week-moves">
+                  {(provided) => (
+                    <div className="space-y-3 mb-4" ref={provided.innerRef} {...provided.droppableProps}>
+                      {miniMoves.map((move, index) => (
+                        <Draggable key={move.id} draggableId={move.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`rounded-lg border transition-all duration-200 overflow-hidden ${snapshot.isDragging ? 'shadow-lg ring-2 ring-primary/20' : ''}`}
+                              style={{ ...provided.draggableProps.style, borderColor: move.completed ? 'hsl(var(--primary) / 0.2)' : undefined }}
+                            >
+                              <div className={`flex items-center gap-2 p-3 ${move.completed ? 'bg-sage-light/30' : 'bg-background'}`}>
+                                <div {...provided.dragHandleProps} className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+                                  <GripVertical className="h-4 w-4" />
+                                </div>
+                                <button onClick={(e) => handleToggleMove(move.id, move.completed, undefined, e)} className={`
+                                    flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center
+                                    transition-all duration-200
+                                    ${move.completed ? 'bg-primary border-primary' : 'border-border hover:border-primary'}
+                                  `}>
+                                  {move.completed && <Check className="h-3 w-3 text-primary-foreground" />}
+                                </button>
+                                {editingMoveId === move.id ? (
+                                  <div className="flex-1 flex gap-2">
+                                    <input
+                                      type="text"
+                                      value={editingMoveTitle}
+                                      onChange={e => setEditingMoveTitle(e.target.value)}
+                                      onKeyDown={e => { if (e.key === 'Enter') handleSaveEditMove(move); if (e.key === 'Escape') setEditingMoveId(null); }}
+                                      className="input-field flex-1 h-8 text-sm"
+                                      autoFocus
+                                    />
+                                    <button onClick={() => handleSaveEditMove(move)} className="p-1 rounded text-primary hover:bg-primary/10 transition-colors">
+                                      <Save className="h-4 w-4" />
+                                    </button>
+                                    <button onClick={() => setEditingMoveId(null)} className="p-1 rounded text-muted-foreground hover:bg-muted transition-colors">
+                                      <X className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <span
+                                      className={`flex-1 cursor-pointer ${move.completed ? 'line-through text-muted-foreground' : ''}`}
+                                      onDoubleClick={() => handleStartEditMove(move)}
+                                    >
+                                      {move.title}
+                                      {move.carried_forward && (
+                                        <span className="ml-2 inline-flex items-center text-[10px] font-medium text-muted-foreground/70 bg-muted/50 px-1.5 py-0.5 rounded-full leading-none">↩ carried over</span>
+                                      )}
+                                    </span>
+                                    <button onClick={() => handleToggleNotes(move)} className={`p-1 rounded transition-colors ${expandedMoveId === move.id ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'} ${move.notes ? 'opacity-100' : 'opacity-50 hover:opacity-100'}`} title="Notes">
+                                      <Edit3 className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button onClick={() => handleStartEditMove(move)} className="p-1 rounded text-muted-foreground opacity-50 hover:opacity-100 hover:text-foreground hover:bg-muted transition-colors" title="Edit title">
+                                      <Settings className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button onClick={() => handleDeleteMove(move.id)} className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                                      <X className="h-4 w-4" />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                              {expandedMoveId === move.id && (
+                                <div className="px-3 pb-3 pt-1 border-t border-border/50 bg-muted/20">
+                                  <textarea
+                                    value={moveNotes[move.id] ?? move.notes ?? ''}
+                                    onChange={e => setMoveNotes(prev => ({ ...prev, [move.id]: e.target.value }))}
+                                    onBlur={() => handleSaveNotes(move)}
+                                    placeholder="Add notes..."
+                                    className="w-full bg-transparent text-sm text-muted-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none min-h-[48px]"
+                                    rows={2}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
                     </div>
-                    {expandedMoveId === move.id && (
-                      <div className="px-3 pb-3 pt-1 border-t border-border/50 bg-muted/20">
-                        <textarea
-                          value={moveNotes[move.id] ?? move.notes ?? ''}
-                          onChange={e => setMoveNotes(prev => ({ ...prev, [move.id]: e.target.value }))}
-                          onBlur={() => handleSaveNotes(move)}
-                          placeholder="Add notes..."
-                          className="w-full bg-transparent text-sm text-muted-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none min-h-[48px]"
-                          rows={2}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
 
               {/* Add new mini move */}
               <div className="flex gap-2">

@@ -231,6 +231,7 @@ export function useMiniMoves(weeklyEntryId?: string) {
         .from('mini_moves')
         .select('*')
         .eq('weekly_entry_id', weeklyEntryId)
+        .order('sort_order', { ascending: true })
         .order('created_at', { ascending: true });
 
       if (error) throw error;
@@ -248,12 +249,23 @@ export function useAddMiniMove() {
     mutationFn: async ({ weeklyEntryId, title }: { weeklyEntryId: string; title: string }) => {
       if (!user) throw new Error('Not authenticated');
 
+      // Get max sort_order for this entry
+      const { data: existing } = await supabase
+        .from('mini_moves')
+        .select('sort_order')
+        .eq('weekly_entry_id', weeklyEntryId)
+        .order('sort_order', { ascending: false })
+        .limit(1);
+
+      const nextOrder = (existing?.[0]?.sort_order ?? -1) + 1;
+
       const { error } = await supabase
         .from('mini_moves')
         .insert({
           weekly_entry_id: weeklyEntryId,
           user_id: user.id,
           title,
+          sort_order: nextOrder,
         });
 
       if (error) throw error;
@@ -313,6 +325,23 @@ export function useUpdateMiniMove() {
         .eq('id', id);
 
       if (error) throw error;
+      return { weeklyEntryId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['miniMoves', data.weeklyEntryId] });
+    },
+  });
+}
+
+export function useReorderMiniMoves() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ reorderedMoves, weeklyEntryId }: { reorderedMoves: { id: string; sort_order: number }[]; weeklyEntryId: string }) => {
+      const updates = reorderedMoves.map(m =>
+        supabase.from('mini_moves').update({ sort_order: m.sort_order }).eq('id', m.id)
+      );
+      await Promise.all(updates);
       return { weeklyEntryId };
     },
     onSuccess: (data) => {
