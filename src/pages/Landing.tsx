@@ -29,7 +29,7 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-20">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        <div className="container mx-auto px-6 py-16 md:py-20 relative">
+        <div className="container mx-auto px-6 pt-16 pb-10 md:pt-20 md:pb-12 relative">
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-primary font-medium tracking-widest uppercase mb-4">
               Women's Digital Creators
