@@ -6,7 +6,7 @@ interface StarBurstProps {
   onComplete: () => void;
 }
 
-const PARTICLE_COUNT = 12;
+const PARTICLE_COUNT = 24;
 const COLORS = [
   'hsl(var(--primary))',
   'hsl(var(--accent))',
@@ -21,7 +21,7 @@ export function StarBurst({ x, y, onComplete }: StarBurstProps) {
     const timer = setTimeout(() => {
       setVisible(false);
       onComplete();
-    }, 600);
+    }, 900);
     return () => clearTimeout(timer);
   }, [onComplete]);
 
@@ -34,10 +34,10 @@ export function StarBurst({ x, y, onComplete }: StarBurstProps) {
     >
       {Array.from({ length: PARTICLE_COUNT }).map((_, i) => {
         const angle = (360 / PARTICLE_COUNT) * i;
-        const distance = 20 + Math.random() * 15;
-        const size = 4 + Math.random() * 4;
+        const distance = 60 + Math.random() * 90;
+        const size = 6 + Math.random() * 8;
         const color = COLORS[i % COLORS.length];
-        const delay = Math.random() * 0.05;
+        const delay = Math.random() * 0.08;
 
         return (
           <div
@@ -49,7 +49,7 @@ export function StarBurst({ x, y, onComplete }: StarBurstProps) {
               backgroundColor: color,
               left: 0,
               top: 0,
-              animation: `starburst-particle 0.5s ${delay}s ease-out forwards`,
+              animation: `starburst-particle 0.7s ${delay}s ease-out forwards`,
               ['--angle' as string]: `${angle}deg`,
               ['--distance' as string]: `${distance}px`,
             }}
@@ -60,10 +60,10 @@ export function StarBurst({ x, y, onComplete }: StarBurstProps) {
       <div
         className="absolute rounded-full"
         style={{
-          width: 10,
-          height: 10,
-          left: -5,
-          top: -5,
+          width: 16,
+          height: 16,
+          left: -8,
+          top: -8,
           backgroundColor: 'hsl(45, 93%, 58%)',
           animation: 'starburst-flash 0.4s ease-out forwards',
         }}
