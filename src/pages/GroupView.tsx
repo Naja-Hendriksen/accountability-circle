@@ -282,6 +282,7 @@ function MemberCard({ member, currentWeekDates, previousWeekDates, delay }: Memb
           isExpanded={expandedWeek === 'current'}
           onToggle={() => setExpandedWeek(expandedWeek === 'current' ? null : 'current')}
           isCurrent
+          obstacles={profile.obstacles}
         />
 
         {/* Previous Week */}
@@ -295,6 +296,7 @@ function MemberCard({ member, currentWeekDates, previousWeekDates, delay }: Memb
           total={previousTotal}
           isExpanded={expandedWeek === 'previous'}
           onToggle={() => setExpandedWeek(expandedWeek === 'previous' ? null : 'previous')}
+          obstacles={profile.obstacles}
         />
       </div>
     </div>
@@ -312,6 +314,7 @@ interface WeekSectionProps {
   isExpanded: boolean;
   onToggle: () => void;
   isCurrent?: boolean;
+  obstacles?: string | null;
 }
 
 function WeekSection({ 
@@ -324,7 +327,8 @@ function WeekSection({
   total,
   isExpanded, 
   onToggle,
-  isCurrent 
+  isCurrent,
+  obstacles 
 }: WeekSectionProps) {
   return (
     <div>
@@ -395,7 +399,7 @@ function WeekSection({
           {entry && (
             <div className="space-y-4 mt-4">
               {/* Obstacles & Wins - Side by side */}
-              {(entry.obstacles || entry.wins) && (
+              {(obstacles || entry.wins) && (
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="p-3 rounded-lg bg-muted/50 border border-border">
                     <div className="flex items-center gap-2 mb-2">
@@ -405,7 +409,7 @@ function WeekSection({
                       </span>
                     </div>
                     <p className="text-sm text-foreground">
-                      {entry.obstacles || <span className="italic text-muted-foreground">None shared</span>}
+                      {obstacles || <span className="italic text-muted-foreground">None shared</span>}
                     </p>
                   </div>
 

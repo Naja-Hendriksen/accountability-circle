@@ -13,6 +13,7 @@ export interface Profile {
   monthly_milestones: string | null;
   business_name: string | null;
   business_website: string | null;
+  obstacles: string | null;
   notification_preference: NotificationPreference;
   created_at: string;
   updated_at: string;

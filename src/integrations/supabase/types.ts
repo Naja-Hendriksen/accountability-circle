@@ -564,6 +564,7 @@ export type Database = {
           monthly_milestones: string | null
           name: string
           notification_preference: string
+          obstacles: string | null
           updated_at: string
           user_id: string
         }
@@ -577,6 +578,7 @@ export type Database = {
           monthly_milestones?: string | null
           name?: string
           notification_preference?: string
+          obstacles?: string | null
           updated_at?: string
           user_id: string
         }
@@ -590,6 +592,7 @@ export type Database = {
           monthly_milestones?: string | null
           name?: string
           notification_preference?: string
+          obstacles?: string | null
           updated_at?: string
           user_id?: string
         }

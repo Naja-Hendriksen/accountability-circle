@@ -87,7 +87,8 @@ export default function Dashboard() {
         growth_goal: profile.growth_goal || '',
         monthly_milestones: profile.monthly_milestones || '',
         business_name: profile.business_name || '',
-        business_website: profile.business_website || ''
+        business_website: profile.business_website || '',
+        obstacles: profile.obstacles || ''
       }));
     }
   }, [profile]);
@@ -95,7 +96,6 @@ export default function Dashboard() {
     if (weeklyEntry) {
       setFormData(prev => ({
         ...prev,
-        obstacles: weeklyEntry.obstacles || '',
         wins: weeklyEntry.wins || '',
         self_care: weeklyEntry.self_care || ''
       }));
@@ -119,7 +119,7 @@ export default function Dashboard() {
     return <Navigate to="/auth" replace />;
   }
   const isLoading = profileLoading || weeklyLoading;
-  const saveProfileField = async (field: 'name' | 'growth_goal' | 'monthly_milestones' | 'business_name' | 'business_website') => {
+  const saveProfileField = async (field: 'name' | 'growth_goal' | 'monthly_milestones' | 'business_name' | 'business_website' | 'obstacles') => {
     try {
       await updateProfile.mutateAsync({
         [field]: formData[field]
@@ -613,12 +613,12 @@ export default function Dashboard() {
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">What might get in your way this week? Or reflect on what stopped you take action</p>
 
-                <EditableField value={formData.obstacles} isEditing={editingSection === 'obstacles'} onEdit={() => setEditingSection('obstacles')} onSave={() => saveWeeklyField('obstacles')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
+                <EditableField value={formData.obstacles} isEditing={editingSection === 'obstacles'} onEdit={() => setEditingSection('obstacles')} onSave={() => saveProfileField('obstacles')} onCancel={() => setEditingSection(null)} onChange={v => setFormData(p => ({
               ...p,
               obstacles: v
             }))} placeholder="What challenges are you facing? Being honest helps the group support you." multiline />
-                {weeklyEntry?.updated_at && formData.obstacles && (
-                  <p className="text-xs text-muted-foreground/60 mt-2">{format(new Date(weeklyEntry.updated_at), 'MMM d, yyyy')}</p>
+                {profile?.updated_at && formData.obstacles && (
+                  <p className="text-xs text-muted-foreground/60 mt-2">{format(new Date(profile.updated_at), 'MMM d, yyyy')}</p>
                 )}
               </section>
 
