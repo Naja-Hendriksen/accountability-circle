@@ -68,7 +68,7 @@ const Landing = () => {
       </section>
 
       {/* You're Invited (formerly Meet Your Facilitator) */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-12 bg-muted/30">
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-display font-light text-center mb-12">
