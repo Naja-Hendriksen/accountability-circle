@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import CelebrationPopup from '@/components/CelebrationPopup';
+import { StarBurst } from '@/components/StarBurst';
 export default function Dashboard() {
   const {
     user,
@@ -77,6 +78,7 @@ export default function Dashboard() {
   const [editingMoveTitle, setEditingMoveTitle] = useState('');
   const [expandedMoveId, setExpandedMoveId] = useState<string | null>(null);
   const [moveNotes, setMoveNotes] = useState<Record<string, string>>({});
+  const [starBurst, setStarBurst] = useState<{ x: number; y: number } | null>(null);
 
   // Sync form data with loaded data
   useEffect(() => {
@@ -197,9 +199,14 @@ export default function Dashboard() {
       });
     }
   };
-  const handleToggleMove = async (id: string, completed: boolean, entryId?: string) => {
+  const handleToggleMove = async (id: string, completed: boolean, entryId?: string, event?: React.MouseEvent) => {
     const targetEntryId = entryId || weeklyEntry?.id;
     if (!targetEntryId) return;
+    // Show starburst when marking as complete (not when unchecking)
+    if (!completed && event) {
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      setStarBurst({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+    }
     try {
       await toggleMiniMove.mutateAsync({
         id,
@@ -291,6 +298,7 @@ export default function Dashboard() {
   };
   const planAheadHint = getPlanAheadHint();
   return <AppLayout>
+      {starBurst && <StarBurst x={starBurst.x} y={starBurst.y} onComplete={() => setStarBurst(null)} />}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         {/* Header */}
         <div className="mb-10 animate-fade-in flex items-start justify-between gap-4">
@@ -380,7 +388,7 @@ export default function Dashboard() {
                   <div key={move.id} className="rounded-lg border transition-all duration-200 overflow-hidden"
                     style={{ borderColor: move.completed ? 'hsl(var(--primary) / 0.2)' : undefined }}>
                     <div className={`flex items-center gap-3 p-3 ${move.completed ? 'bg-sage-light/30' : 'bg-background'}`}>
-                      <button onClick={() => handleToggleMove(move.id, move.completed)} className={`
+                      <button onClick={(e) => handleToggleMove(move.id, move.completed, undefined, e)} className={`
                           flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center
                           transition-all duration-200
                           ${move.completed ? 'bg-primary border-primary' : 'border-border hover:border-primary'}
@@ -467,7 +475,7 @@ export default function Dashboard() {
                         style={{ borderColor: move.completed ? 'hsl(var(--primary) / 0.1)' : undefined }}>
                         <div className={`flex items-center gap-3 p-2.5 ${move.completed ? 'bg-sage-light/20' : 'bg-muted/30'}`}>
                           <button 
-                            onClick={() => handleToggleMove(move.id, move.completed, previousWeekEntry.id)} 
+                            onClick={(e) => handleToggleMove(move.id, move.completed, previousWeekEntry.id, e)} 
                             className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${move.completed ? 'bg-primary border-primary' : 'border-muted-foreground/40 hover:border-primary'}`}
                           >
                             {move.completed && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
@@ -542,7 +550,7 @@ export default function Dashboard() {
                       style={{ borderColor: move.completed ? 'hsl(var(--primary) / 0.1)' : undefined }}>
                       <div className={`flex items-center gap-3 p-2.5 ${move.completed ? 'bg-sage-light/20' : 'bg-background'}`}>
                         <button 
-                          onClick={() => handleToggleMove(move.id, move.completed, nextWeekEntry.id)} 
+                          onClick={(e) => handleToggleMove(move.id, move.completed, nextWeekEntry.id, e)} 
                           className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${move.completed ? 'bg-primary border-primary' : 'border-border hover:border-primary'}`}
                         >
                           {move.completed && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
