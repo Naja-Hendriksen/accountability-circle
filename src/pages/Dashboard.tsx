@@ -470,7 +470,7 @@ export default function Dashboard() {
                                     {/* Day label - subtle badge or tap target */}
                                     <button
                                       onClick={() => setDayPickerMoveId(dayPickerMoveId === move.id ? null : move.id)}
-                                      className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-all duration-200 leading-none ${
+                                      className={`px-1.5 py-0.5 rounded text-sm font-medium transition-all duration-200 leading-none ${
                                         move.scheduled_day != null
                                           ? 'text-primary/70 bg-primary/8 hover:bg-primary/15'
                                           : 'text-muted-foreground/30 hover:text-muted-foreground/60 hover:bg-muted/50'
@@ -653,7 +653,7 @@ export default function Dashboard() {
                             <span className={`flex-1 text-sm cursor-pointer ${move.completed ? 'line-through text-muted-foreground' : ''}`} onDoubleClick={() => handleStartEditMove(move)}>{move.title}</span>
                             <button
                               onClick={() => setDayPickerMoveId(dayPickerMoveId === move.id ? null : move.id)}
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-all duration-200 leading-none ${
+                              className={`px-1.5 py-0.5 rounded text-sm font-medium transition-all duration-200 leading-none ${
                                 move.scheduled_day != null
                                   ? 'text-primary/70 bg-primary/8 hover:bg-primary/15'
                                   : 'text-muted-foreground/30 hover:text-muted-foreground/60 hover:bg-muted/50'
