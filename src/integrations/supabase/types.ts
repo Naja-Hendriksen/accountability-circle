@@ -516,6 +516,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          scheduled_day: number | null
           sort_order: number
           title: string
           updated_at: string
@@ -528,6 +529,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          scheduled_day?: number | null
           sort_order?: number
           title: string
           updated_at?: string
@@ -540,6 +542,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          scheduled_day?: number | null
           sort_order?: number
           title?: string
           updated_at?: string

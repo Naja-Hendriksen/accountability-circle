@@ -1,0 +1,2 @@
+ALTER TABLE public.mini_moves ADD COLUMN scheduled_day smallint DEFAULT NULL;
+COMMENT ON COLUMN public.mini_moves.scheduled_day IS 'Day of week: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun. NULL means unscheduled.';
