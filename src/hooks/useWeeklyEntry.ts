@@ -61,7 +61,7 @@ export function useCurrentWeekEntry() {
         if (insertError) throw insertError;
         data = newData;
 
-        // Carry forward incomplete mini-moves from previous week
+        // Carry forward incomplete mini-moves from previous week (fallback if cron hasn't run)
         const lastWeek = new Date();
         lastWeek.setDate(lastWeek.getDate() - 7);
         const prevWeekStart = getWeekStart(lastWeek);
@@ -74,22 +74,32 @@ export function useCurrentWeekEntry() {
           .maybeSingle();
 
         if (prevEntry) {
-          const { data: incompleteMoves } = await supabase
+          // Check if moves were already carried forward (by cron or previous visit)
+          const { data: existingCarried } = await supabase
             .from('mini_moves')
-            .select('title, notes')
-            .eq('weekly_entry_id', prevEntry.id)
-            .eq('completed', false);
+            .select('id')
+            .eq('weekly_entry_id', data!.id)
+            .eq('carried_forward', true)
+            .limit(1);
 
-          if (incompleteMoves && incompleteMoves.length > 0) {
-            await supabase.from('mini_moves').insert(
-              incompleteMoves.map(m => ({
-                weekly_entry_id: data!.id,
-                user_id: user.id,
-                title: m.title,
-                notes: m.notes || '',
-                carried_forward: true,
-              }))
-            );
+          if (!existingCarried?.length) {
+            const { data: incompleteMoves } = await supabase
+              .from('mini_moves')
+              .select('title, notes')
+              .eq('weekly_entry_id', prevEntry.id)
+              .eq('completed', false);
+
+            if (incompleteMoves && incompleteMoves.length > 0) {
+              await supabase.from('mini_moves').insert(
+                incompleteMoves.map(m => ({
+                  weekly_entry_id: data!.id,
+                  user_id: user.id,
+                  title: m.title,
+                  notes: m.notes || '',
+                  carried_forward: true,
+                }))
+              );
+            }
           }
         }
       }
